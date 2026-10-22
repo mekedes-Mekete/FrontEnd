@@ -1,0 +1,90 @@
+<div class="login-container">
+  <!-- Left Side: Branding Banner -->
+  <div class="branding-section">
+    <div class="brand-header">
+      <div class="logo-badge">
+        <span class="plus-icon">+</span>
+        <span class="brand-name">MediScribe AI</span>
+      </div>
+    </div>
+
+    <div class="brand-content">
+      <span class="sub-heading">CLINICAL RECORDS PLATFORM</span>
+      <h1 class="main-heading">
+        AI-powered notes,<br />
+        <span class="accent-text">precisely managed.</span>
+      </h1>
+      <p class="description">
+        Secure, structured clinical documentation for healthcare teams. Patient records, physician notes, and administrative oversight — unified.
+      </p>
+
+      <div class="stats-grid">
+        <div class="stat-item">
+          <h3>2,847</h3>
+          <p>Active Patients</p>
+        </div>
+        <div class="stat-item">
+          <h3>14,320</h3>
+          <p>Notes This Month</p>
+        </div>
+        <div class="stat-item">
+          <h3>&lt; 4h</h3>
+          <p>Avg. Response</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="brand-footer">
+      <span>© 2026 MediCore Health Systems • HIPAA Compliant</span>
+    </div>
+  </div>
+
+  <!-- Right Side: Sign In Form -->
+  <div class="form-section">
+    <div class="form-wrapper">
+      <h2>Sign in</h2>
+      <p class="form-subtitle">Enter your credentials to access your portal.</p>
+
+      <!-- Error Message Display -->
+      @if (errorMessage) {
+        <div class="error-banner">
+          {{ errorMessage }}
+        </div>
+      }
+
+      <form (ngSubmit)="onLogin()" #loginForm="ngForm">
+        <div class="input-group">
+          <label for="username">Username / Email</label>
+          <input 
+            type="text" 
+            id="username" 
+            [(ngModel)]="credentials.username" 
+            name="username" 
+            placeholder="e.g. j.smith@hospital.com" 
+            required 
+          />
+        </div>
+
+        <div class="input-group">
+          <label for="password">Password</label>
+          <input 
+            type="password" 
+            id="password" 
+            [(ngModel)]="credentials.password" 
+            name="password" 
+            placeholder="Enter your password" 
+            required 
+          />
+        </div>
+
+        <button type="submit" class="submit-btn" [disabled]="!loginForm.form.valid">
+          Sign In
+        </button>
+      </form>
+
+      <div class="demo-notice">
+        <strong>Demo environment.</strong> No real patient data. All records are synthetic and for demonstration purposes only.
+      </div>
+    </div>
+  </div>
+</div>

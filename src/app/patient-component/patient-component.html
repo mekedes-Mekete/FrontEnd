@@ -1,0 +1,292 @@
+<div class="dashboard-container">
+
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+
+    <div class="sidebar-top">
+
+      <!-- Logo -->
+      <div class="logo-container">
+        <div class="logo-icon">+</div>
+        <span class="logo-text">MediScribe AI</span>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="nav-section">
+
+        <p class="nav-header">NAVIGATION</p>
+
+        <a href="#" class="nav-item active">
+
+          <div class="nav-icon grid-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+
+          <span>Dashboard</span>
+
+          <span class="active-dot"></span>
+
+        </a>
+
+      </nav>
+
+    </div>
+
+
+    <!-- Patient Profile -->
+    <div class="user-card">
+
+      <div class="avatar">
+        TB
+      </div>
+
+      <div class="user-info">
+
+        <p class="user-name">
+          {{ patient.name }}
+        </p>
+
+        <p class="user-role">
+          Patient
+        </p>
+
+      </div>
+
+    </div>
+
+  </aside>
+
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <div class="content-wrapper">
+
+      <!-- Patient Banner -->
+      <section class="patient-banner">
+
+        <div class="banner-top-row">
+
+          <div>
+            <p class="banner-welcome">
+              Welcome back
+            </p>
+
+            <h1 class="banner-name">
+              {{ patient.name }}
+            </h1>
+          </div>
+
+        </div>
+
+
+        <div class="banner-info-grid">
+
+          <div class="info-item">
+
+            <span class="info-label">
+              DATE OF BIRTH
+            </span>
+
+            <span class="info-value">
+              {{ patient.dob }}
+            </span>
+
+          </div>
+
+
+          <div class="info-item">
+
+            <span class="info-label">
+              PRIMARY DOCTOR
+            </span>
+
+            <span class="info-value">
+              {{ patient.primaryDoctor }}
+            </span>
+
+          </div>
+
+
+          <div class="info-item">
+
+            <span class="info-label">
+              ALLERGIES
+            </span>
+
+            <span class="info-value">
+              {{ patient.allergies }}
+            </span>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- Services Section -->
+      <section class="services-section">
+
+        <h2 class="section-title">
+          Services
+        </h2>
+
+
+        <div class="services-card">
+
+          <!-- Table Header -->
+          <div class="services-header">
+
+            <span class="col-service">
+              SERVICE
+            </span>
+
+            <span class="col-notes">
+              PATIENT NOTES
+            </span>
+
+            <span class="col-date">
+              DATE OF VISIT
+            </span>
+
+            <span class="col-updated">
+              LAST UPDATED
+            </span>
+
+            <span class="col-actions">
+              ACTIONS
+            </span>
+
+          </div>
+
+
+          <!-- Services -->
+          <div
+            *ngFor="let item of serviceRows"
+            class="service-row-group"
+          >
+
+            <!-- Summary Row -->
+            <div class="service-summary-row">
+
+              <div class="col-service">
+
+                <span
+                  class="badge"
+                  [ngClass]="item.serviceType"
+                >
+                  {{ item.serviceType }}
+                </span>
+
+              </div>
+
+
+              <div class="col-notes truncate">
+
+                {{ item.patientNotes }}
+
+              </div>
+
+
+              <div class="col-date">
+
+                {{ item.dateOfVisit }}
+
+              </div>
+
+
+              <div class="col-updated">
+
+                {{ item.lastUpdated }}
+
+              </div>
+
+
+              <div class="col-actions">
+
+                <button
+                  type="button"
+                  class="action-btn"
+                  (click)="toggleDetails(item)"
+                >
+
+                  {{ item.expanded ? 'Collapse' : 'View details' }}
+
+                </button>
+
+              </div>
+
+            </div>
+
+
+            <!-- Expanded Detail -->
+            <div
+              *ngIf="item.expanded"
+              class="service-expanded-content"
+            >
+
+              <h3 class="expanded-title">
+                {{ item.title }}
+              </h3>
+
+
+              <div class="split-container">
+
+                <!-- Original Doctor Note -->
+                <div class="note-box original-box">
+
+                  <p class="box-label">
+                    ORIGINAL DOCTOR NOTE
+                  </p>
+
+                  <p class="box-text">
+                    {{ item.originalNote }}
+                  </p>
+
+                </div>
+
+
+                <!-- Patient Summary -->
+                <div class="note-box insights-box">
+
+                  <div class="insights-label-wrapper">
+
+                    <span class="insights-sparkle">
+                      ✦
+                    </span>
+
+                    <p class="box-label insights-label">
+                      PATIENT SUMMARY
+                    </p>
+
+                  </div>
+
+                  <p class="box-text insights-text">
+                    {{ item.insightsSummary }}
+                  </p>
+
+                  <p class="insights-disclaimer">
+                    For clarity only. Follow your clinician's instructions.
+                  </p>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+    </div>
+
+  </main>
+
+</div>
