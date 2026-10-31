@@ -1,0 +1,81 @@
+<div class="page-header">
+  <h1 class="page-title">Dashboard</h1>
+</div>
+
+<div class="cards-grid">
+  <!-- Doctors preview (UC3) -->
+  <section class="summary-card">
+    <div class="card-header">
+      <div class="icon-badge teal-badge" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="8.5" cy="7" r="4"></circle>
+          <line x1="20" y1="8" x2="20" y2="14"></line>
+          <line x1="23" y1="11" x2="17" y2="11"></line>
+        </svg>
+      </div>
+      <a class="arrow-btn" routerLink="/admin/doctors" aria-label="See all doctors">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </a>
+    </div>
+
+    <h2 class="card-title">Doctors</h2>
+
+    <div class="list-container">
+      @for (doc of doctors().slice(0, previewSize); track doc.id) {
+        <div class="list-item">
+          <div class="person-cell">
+            <div class="avatar doctor-avatar">{{ doc.fullName | initials }}</div>
+            <div>
+              <span class="person-name">{{ doc.fullName }}</span>
+              <span class="person-sub">{{ doc.specialty }}</span>
+            </div>
+          </div>
+          <a class="view-btn" [routerLink]="['/admin/doctors', doc.id]">View details</a>
+        </div>
+      } @empty {
+        <p class="muted">{{ loading() ? 'Loading…' : 'No doctors yet.' }}</p>
+      }
+    </div>
+  </section>
+
+  <!-- Patients preview (UC4) -->
+  <section class="summary-card">
+    <div class="card-header">
+      <div class="icon-badge green-badge" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </div>
+      <a class="arrow-btn" routerLink="/admin/patients" aria-label="See all patients">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </a>
+    </div>
+
+    <h2 class="card-title">Patients</h2>
+
+    <div class="list-container">
+      @for (pat of patients().slice(0, previewSize); track pat.id) {
+        <div class="list-item">
+          <div class="person-cell">
+            <div class="avatar patient-avatar">{{ pat.fullName | initials }}</div>
+            <div>
+              <span class="person-name">{{ pat.fullName }}</span>
+              <span class="person-sub">{{ pat.email | maskEmail }}</span>
+            </div>
+          </div>
+          <a class="view-btn" [routerLink]="['/admin/patients', pat.id]">View details</a>
+        </div>
+      } @empty {
+        <p class="muted">{{ loading() ? 'Loading…' : 'No patients yet.' }}</p>
+      }
+    </div>
+  </section>
+</div>

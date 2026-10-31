@@ -1,0 +1,66 @@
+<div class="dialog-container">
+  <h2 class="dialog-title">Edit note</h2>
+  <p class="dialog-subtitle">
+    {{ data.note.patientName }} · {{ data.note.serviceType }} · visit on
+    {{ data.note.dateOfVisit | date: 'MMM d, y' }} · last updated
+    {{ data.note.lastUpdated | date: 'MMM d, y, h:mm a' }}
+  </p>
+
+  @if (errorMessage()) {
+    <div class="error-banner" role="alert">{{ errorMessage() }}</div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <div class="form-group">
+      <label class="form-label" for="note-title">TITLE</label>
+      <input
+        id="note-title"
+        type="text"
+        class="form-control"
+        formControlName="title"
+        [class.invalid]="showError('title')"
+      />
+      @if (showError('title')) {
+        <span class="field-error">
+          @if (form.controls.title.hasError('maxlength')) {
+            Title must be 120 characters or fewer.
+          } @else {
+            Title is required.
+          }
+        </span>
+      }
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="note-original">ORIGINAL DOCTOR NOTE</label>
+      <textarea
+        id="note-original"
+        rows="6"
+        class="form-control textarea"
+        formControlName="originalNote"
+        [class.invalid]="showError('originalNote')"
+      ></textarea>
+      @if (showError('originalNote')) {
+        <span class="field-error">The original note cannot be empty.</span>
+      }
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="note-summary">PATIENT SUMMARY</label>
+      <textarea
+        id="note-summary"
+        rows="5"
+        class="form-control textarea"
+        formControlName="summary"
+      ></textarea>
+      <span class="field-hint">Plain-language text the patient reads next to the original note.</span>
+    </div>
+
+    <div class="dialog-actions">
+      <button type="button" class="btn-secondary" (click)="cancel()" [disabled]="saving()">Cancel</button>
+      <button type="submit" class="btn-primary" [disabled]="saving() || form.pristine">
+        {{ saving() ? 'Saving…' : 'Save changes' }}
+      </button>
+    </div>
+  </form>
+</div>
