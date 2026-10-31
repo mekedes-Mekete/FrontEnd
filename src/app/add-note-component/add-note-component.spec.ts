@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { AddNoteComponent } from './add-note-component';
 
 describe('AddNoteComponent', () => {
@@ -8,9 +8,12 @@ describe('AddNoteComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AddNoteComponent]
-    })
-    .compileComponents();
+      imports: [AddNoteComponent],
+      providers: [
+        { provide: MatDialogRef, useValue: { close: () => undefined } },
+        { provide: MAT_DIALOG_DATA, useValue: { patients: [] } },
+      ],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(AddNoteComponent);
     component = fixture.componentInstance;

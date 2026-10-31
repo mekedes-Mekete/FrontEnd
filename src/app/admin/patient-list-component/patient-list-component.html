@@ -1,0 +1,60 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Patients</h1>
+    <p class="page-subtitle">Open a patient to see their record and services.</p>
+  </div>
+  <div class="toolbar">
+    <input
+      type="search"
+      class="search-input"
+      placeholder="Search by name or primary doctor"
+      aria-label="Search patients"
+      [value]="query()"
+      (input)="onSearch($event)"
+    />
+  </div>
+</div>
+
+<div class="table-card">
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>PATIENT</th>
+          <th>EMAIL</th>
+          <th>DATE OF BIRTH</th>
+          <th>PRIMARY DOCTOR</th>
+          <th>STATUS</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          <tr><td class="empty-cell" colspan="6">Loading patients…</td></tr>
+        } @else {
+          @for (pat of filtered(); track pat.id) {
+            <tr>
+              <td>
+                <div class="person-cell">
+                  <div class="avatar patient-avatar">{{ pat.fullName | initials }}</div>
+                  <span class="person-name">{{ pat.fullName }}</span>
+                </div>
+              </td>
+              <td class="muted">{{ pat.email | maskEmail }}</td>
+              <td class="nowrap">{{ pat.dateOfBirth | date: 'MMM d, y' }}</td>
+              <td>{{ pat.primaryDoctorName ?? 'Not assigned' }}</td>
+              <td>
+                <span class="badge" [class.active]="pat.active" [class.inactive]="!pat.active">
+                  {{ pat.active ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td><a class="view-btn" [routerLink]="['/admin/patients', pat.id]">View details</a></td>
+            </tr>
+          } @empty {
+            <tr><td class="empty-cell" colspan="6">No patients match your search.</td></tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

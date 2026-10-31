@@ -1,0 +1,112 @@
+<div class="dialog-container">
+  <h2 class="dialog-title">{{ isEdit ? 'Edit account' : 'New account' }}</h2>
+  <p class="dialog-subtitle">
+    @if (isEdit) {
+      Change the person's details, role or primary doctor.
+    } @else {
+      The person can log in with this email and the temporary password.
+    }
+  </p>
+
+  @if (errorMessage()) {
+    <div class="error-banner" role="alert">{{ errorMessage() }}</div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <div class="form-row">
+      <div class="form-group flex-1">
+        <label class="form-label" for="acc-name">FULL NAME</label>
+        <input id="acc-name" type="text" class="form-control" formControlName="fullName"
+               [class.invalid]="showError('fullName')" />
+        @if (showError('fullName')) {
+          <span class="field-error">Full name is required.</span>
+        }
+      </div>
+      <div class="form-group flex-1">
+        <label class="form-label" for="acc-email">EMAIL</label>
+        <input id="acc-email" type="email" class="form-control" formControlName="email"
+               placeholder="name@medicore.health" [class.invalid]="showError('email')" />
+        @if (showError('email')) {
+          <span class="field-error">Enter a valid email address.</span>
+        }
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="acc-role">ROLE</label>
+      <select id="acc-role" class="form-control" formControlName="role">
+        @for (r of roles; track r[0]) {
+          <option [value]="r[0]">{{ r[1] }}</option>
+        }
+      </select>
+    </div>
+
+    @if (role() === 'ROLE_DOCTOR') {
+      <div class="form-group">
+        <label class="form-label" for="acc-specialty">SPECIALTY</label>
+        <input id="acc-specialty" type="text" class="form-control" formControlName="specialty"
+               placeholder="e.g. Cardiology" [class.invalid]="showError('specialty')" />
+        @if (showError('specialty')) {
+          <span class="field-error">Specialty is required for doctors.</span>
+        }
+      </div>
+    }
+
+    @if (role() === 'ROLE_PATIENT') {
+      <div class="form-row">
+        <div class="form-group flex-1">
+          <label class="form-label" for="acc-dob">DATE OF BIRTH</label>
+          <input id="acc-dob" type="date" class="form-control" formControlName="dateOfBirth"
+                 [max]="today" [class.invalid]="showError('dateOfBirth')" />
+          @if (showError('dateOfBirth')) {
+            <span class="field-error">
+              @if (form.controls.dateOfBirth.hasError('future')) {
+                Date of birth cannot be in the future.
+              } @else {
+                Date of birth is required.
+              }
+            </span>
+          }
+        </div>
+        <div class="form-group flex-1">
+          <label class="form-label" for="acc-doctor">PRIMARY DOCTOR</label>
+          <select id="acc-doctor" class="form-control" formControlName="primaryDoctorId"
+                  [class.invalid]="showError('primaryDoctorId')">
+            <option [ngValue]="null" disabled>Choose a doctor</option>
+            @for (doc of data.doctors; track doc.id) {
+              <option [ngValue]="doc.id">{{ doc.fullName }} ({{ doc.specialty }})</option>
+            }
+          </select>
+          @if (showError('primaryDoctorId')) {
+            <span class="field-error">Choose the patient's primary doctor.</span>
+          }
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="acc-allergies">ALLERGIES</label>
+        <input id="acc-allergies" type="text" class="form-control" formControlName="allergies"
+               placeholder="e.g. Penicillin, Latex (leave empty if none known)" />
+      </div>
+    }
+
+    @if (!isEdit) {
+      <div class="form-group">
+        <label class="form-label" for="acc-password">TEMPORARY PASSWORD</label>
+        <input id="acc-password" type="password" class="form-control" formControlName="temporaryPassword"
+               autocomplete="new-password" [class.invalid]="showError('temporaryPassword')" />
+        @if (showError('temporaryPassword')) {
+          <span class="field-error">Use at least 8 characters.</span>
+        } @else {
+          <span class="field-hint">Share it with the person securely. The backend will store it hashed.</span>
+        }
+      </div>
+    }
+
+    <div class="dialog-actions">
+      <button type="button" class="btn-secondary" (click)="cancel()" [disabled]="saving()">Cancel</button>
+      <button type="submit" class="btn-primary" [disabled]="saving()">
+        {{ saving() ? 'Saving…' : isEdit ? 'Save changes' : 'Create account' }}
+      </button>
+    </div>
+  </form>
+</div>

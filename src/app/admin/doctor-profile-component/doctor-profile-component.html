@@ -1,0 +1,56 @@
+<a class="back-link" routerLink="/admin/doctors">← All doctors</a>
+
+@if (loading() && !profile()) {
+  <div class="state-box">Loading profile…</div>
+} @else if (errorMessage()) {
+  <div class="state-box">{{ errorMessage() }}</div>
+} @else {
+  @if (profile(); as p) {
+  <section class="banner doctor">
+    <div class="banner-top">
+      <p class="banner-eyebrow">Doctor profile</p>
+      <span class="badge" [class.active]="p.doctor.active" [class.inactive]="!p.doctor.active">
+        {{ p.doctor.active ? 'Active' : 'Inactive' }}
+      </span>
+    </div>
+    <h1 class="banner-name">{{ p.doctor.fullName }}</h1>
+    <div class="banner-grid">
+      <div>
+        <span class="banner-label">SPECIALTY</span>
+        <span class="banner-value">{{ p.doctor.specialty }}</span>
+      </div>
+      <div>
+        <span class="banner-label">EMAIL</span>
+        <span class="banner-value">{{ p.doctor.email }}</span>
+      </div>
+      <div>
+        <span class="banner-label">MEMBER SINCE</span>
+        <span class="banner-value">{{ p.doctor.createdAt | date: 'MMMM y' }}</span>
+      </div>
+    </div>
+  </section>
+
+  <h2 class="section-title">Assigned patients</h2>
+  @if (p.assignedPatients.length) {
+    <div class="people-grid">
+      @for (pat of p.assignedPatients; track pat.id) {
+        <a class="person-card" [routerLink]="['/admin/patients', pat.id]">
+          <div class="person-cell">
+            <div class="avatar patient-avatar">{{ pat.fullName | initials }}</div>
+            <div>
+              <span class="person-name">{{ pat.fullName }}</span>
+              <span class="person-sub">Born {{ pat.dateOfBirth | date: 'MMM d, y' }}</span>
+            </div>
+          </div>
+          <span class="muted" aria-hidden="true">→</span>
+        </a>
+      }
+    </div>
+  } @else {
+    <div class="state-box">No patients are assigned to this doctor.</div>
+  }
+
+  <h2 class="section-title">Recent services</h2>
+  <app-notes-table [notes]="p.recentNotes" [showDoctor]="false" (changed)="load()" />
+}
+}

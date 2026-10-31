@@ -97,6 +97,7 @@
 /* Main Area Layout */
 .main-wrapper {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   background-color: #f8fafc;
@@ -176,157 +177,8 @@
 .content-body {
   padding: 32px 40px;
   max-width: 1200px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.page-title {
-  font-size: 26px;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 0 0 28px 0;
-}
-
-.cards-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
-}
-
-/* Card Styling */
-.summary-card {
-  background-color: #ffffff;
-  border-radius: 16px;
-  border: 1px solid #e2e8f0;
-  padding: 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-}
-
-.card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-}
-
-.icon-badge {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.icon-badge svg {
-  width: 18px;
-  height: 18px;
-}
-
-.teal-badge {
-  background-color: #ccfbf1;
-  color: #0d9488;
-}
-
-.green-badge {
-  background-color: #d1fae5;
-  color: #059669;
-}
-
-.arrow-btn {
-  background: none;
-  border: none;
-  color: #0d9488;
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.arrow-btn svg {
-  width: 18px;
-  height: 18px;
-}
-
-.card-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 0 0 16px 0;
-}
-
-/* List Items */
-.list-container {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.list-item {
-  background-color: #f8fafc;
-  border-radius: 10px;
-  padding: 12px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.item-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  color: white;
-  font-size: 12px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.doctor-avatar {
-  background-color: #0d9488;
-}
-
-.patient-avatar {
-  background-color: #0284c7;
-}
-
-.item-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.item-name {
-  font-size: 14px;
-  font-weight: 600;
-  color: #0f172a;
-}
-
-.item-subtext {
-  font-size: 12px;
-  color: #94a3b8;
-  margin-top: 2px;
-}
-
-.view-btn {
-  background-color: #f1f5f9;
-  color: #475569;
-  border: none;
-  font-size: 12px;
-  font-weight: 500;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.view-btn:hover {
-  background-color: #e2e8f0;
-  color: #0f172a;
-}
+/* Dashboard card styles moved to admin/admin-dashboard-component/admin-dashboard-component.css */

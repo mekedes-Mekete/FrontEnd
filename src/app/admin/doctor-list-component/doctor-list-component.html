@@ -1,0 +1,58 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Doctors</h1>
+    <p class="page-subtitle">Everyone who writes clinical notes in the clinic.</p>
+  </div>
+  <div class="toolbar">
+    <input
+      type="search"
+      class="search-input"
+      placeholder="Search by name or specialty"
+      aria-label="Search doctors"
+      [value]="query()"
+      (input)="onSearch($event)"
+    />
+  </div>
+</div>
+
+<div class="table-card">
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>DOCTOR</th>
+          <th>SPECIALTY</th>
+          <th>EMAIL</th>
+          <th>STATUS</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          <tr><td class="empty-cell" colspan="5">Loading doctors…</td></tr>
+        } @else {
+          @for (doc of filtered(); track doc.id) {
+            <tr>
+              <td>
+                <div class="person-cell">
+                  <div class="avatar doctor-avatar">{{ doc.fullName | initials }}</div>
+                  <span class="person-name">{{ doc.fullName }}</span>
+                </div>
+              </td>
+              <td>{{ doc.specialty }}</td>
+              <td class="muted">{{ doc.email }}</td>
+              <td>
+                <span class="badge" [class.active]="doc.active" [class.inactive]="!doc.active">
+                  {{ doc.active ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td><a class="view-btn" [routerLink]="['/admin/doctors', doc.id]">View profile</a></td>
+            </tr>
+          } @empty {
+            <tr><td class="empty-cell" colspan="5">No doctors match your search.</td></tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

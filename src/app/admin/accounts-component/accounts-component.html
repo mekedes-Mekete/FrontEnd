@@ -1,0 +1,103 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Accounts</h1>
+    <p class="page-subtitle">Create accounts, set roles and primary doctors, and deactivate access.</p>
+  </div>
+  <div class="toolbar">
+    <input
+      type="search"
+      class="search-input"
+      placeholder="Search by name or email"
+      aria-label="Search accounts"
+      [value]="query()"
+      (input)="onSearch($event)"
+    />
+    <select class="filter-select" aria-label="Filter by role" (change)="onRoleFilter($event)">
+      <option value="ALL">All roles</option>
+      @for (r of roleOptions; track r[0]) {
+        <option [value]="r[0]">{{ r[1] }}</option>
+      }
+    </select>
+    <button type="button" class="btn-primary" (click)="openForm()">+ New account</button>
+  </div>
+</div>
+
+@if (errorMessage()) {
+  <div class="error-banner" role="alert">{{ errorMessage() }}</div>
+}
+
+<div class="table-card">
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>NAME</th>
+          <th>EMAIL</th>
+          <th>ROLE</th>
+          <th>DETAILS</th>
+          <th>MEMBER SINCE</th>
+          <th>STATUS</th>
+          <th>ACTIONS</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          <tr><td class="empty-cell" colspan="7">Loading accounts…</td></tr>
+        } @else {
+          @for (acc of filtered(); track acc.id) {
+            <tr>
+              <td>
+                <div class="person-cell">
+                  <div
+                    class="avatar"
+                    [class.admin-avatar]="acc.role === 'ROLE_ADMIN'"
+                    [class.doctor-avatar]="acc.role === 'ROLE_DOCTOR'"
+                    [class.patient-avatar]="acc.role === 'ROLE_PATIENT'"
+                  >
+                    {{ acc.fullName | initials }}
+                  </div>
+                  <span class="person-name">{{ acc.fullName }}</span>
+                </div>
+              </td>
+              <td class="muted">
+                {{ acc.role === 'ROLE_PATIENT' ? (acc.email | maskEmail) : acc.email }}
+              </td>
+              <td><span class="badge" [class]="'role-' + acc.role">{{ roleLabels[acc.role] }}</span></td>
+              <td class="muted">
+                @switch (acc.role) {
+                  @case ('ROLE_DOCTOR') {
+                    {{ acc.specialty }}
+                  }
+                  @case ('ROLE_PATIENT') {
+                    Primary: {{ acc.primaryDoctorName ?? 'not assigned' }}
+                  }
+                  @default {
+                    —
+                  }
+                }
+              </td>
+              <td class="muted nowrap">{{ acc.createdAt | date: 'MMM y' }}</td>
+              <td>
+                <span class="badge" [class.active]="acc.active" [class.inactive]="!acc.active">
+                  {{ acc.active ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button type="button" class="btn-link" (click)="openForm(acc)">Edit</button>
+                  @if (acc.active) {
+                    <button type="button" class="btn-link danger" (click)="setActive(acc, false)">Deactivate</button>
+                  } @else {
+                    <button type="button" class="btn-link" (click)="setActive(acc, true)">Reactivate</button>
+                  }
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td class="empty-cell" colspan="7">No accounts match your filters.</td></tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

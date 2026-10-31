@@ -1,0 +1,91 @@
+@if (errorMessage()) {
+  <div class="error-banner" role="alert">{{ errorMessage() }}</div>
+}
+
+<div class="table-card">
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead>
+        <tr>
+          @if (showPatient()) {
+            <th>PATIENT</th>
+          }
+          @if (showDoctor()) {
+            <th>DOCTOR</th>
+          }
+          <th>SERVICE</th>
+          <th>TITLE</th>
+          <th>DATE OF VISIT</th>
+          <th>LAST UPDATED</th>
+          <th>ACTIONS</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (note of notes(); track note.id) {
+          <tr [class.is-expanded]="expandedId() === note.id">
+            @if (showPatient()) {
+              <td>
+                <a class="row-link" [routerLink]="['/admin/patients', note.patientId]">{{ note.patientName }}</a>
+              </td>
+            }
+            @if (showDoctor()) {
+              <td>
+                <a class="row-link" [routerLink]="['/admin/doctors', note.doctorId]">{{ note.doctorName }}</a>
+              </td>
+            }
+            <td><span class="type-badge" [ngClass]="note.serviceType">{{ note.serviceType }}</span></td>
+            <td class="cell-title">{{ note.title }}</td>
+            <td class="muted nowrap">{{ note.dateOfVisit | date: 'MMM d, y' }}</td>
+            <td class="muted nowrap">{{ note.lastUpdated | date: 'MMM d, y' }}</td>
+            <td>
+              <div class="action-buttons">
+                <button
+                  type="button"
+                  class="view-btn"
+                  (click)="toggle(note)"
+                  [attr.aria-expanded]="expandedId() === note.id"
+                >
+                  {{ expandedId() === note.id ? 'Collapse' : 'View' }}
+                </button>
+                <button type="button" class="btn-link" (click)="edit(note)">Edit</button>
+                <button type="button" class="btn-link danger" (click)="remove(note)">Delete</button>
+              </div>
+            </td>
+          </tr>
+
+          @if (expandedId() === note.id) {
+            <tr class="detail-row">
+              <td [attr.colspan]="columnCount()">
+                <div class="detail-grid">
+                  <div class="note-card original-note">
+                    <div class="note-card-title">ORIGINAL DOCTOR NOTE</div>
+                    <p>{{ note.originalNote }}</p>
+                  </div>
+                  <div class="note-card ai-summary">
+                    <div class="note-card-title ai-title"><span aria-hidden="true">✦</span> PATIENT SUMMARY</div>
+                    @switch (note.summaryStatus) {
+                      @case ('PENDING') {
+                        <p>The summary is being generated.</p>
+                      }
+                      @case ('FAILED') {
+                        <p>The summary could not be generated. The original note is kept.</p>
+                      }
+                      @default {
+                        <p>{{ note.summary }}</p>
+                      }
+                    }
+                    <span class="disclaimer">For clarity only. Follow your clinician's instructions.</span>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          }
+        } @empty {
+          <tr>
+            <td class="empty-cell" [attr.colspan]="columnCount()">No services recorded yet.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
