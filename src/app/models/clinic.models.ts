@@ -84,4 +84,12 @@ export interface AccountInput {
   allergies?: string | null;
   primaryDoctorId?: number | null;
   temporaryPassword?: string | null;
+  /** Sent on update only (PUT /api/admin/accounts/{id}); false = deactivated. */
+  active?: boolean;
+}
+
+/** Response of the one load call, GET /api/admin/data (contract endpoint 1). */
+export interface AdminData {
+  accounts: UserAccount[];
+  notes: ServiceNote[];
 }
