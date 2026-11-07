@@ -1,0 +1,46 @@
+<a class="back-link" routerLink="/admin/patients">← All patients</a>
+
+@if (loading() && !detail()) {
+  <div class="state-box">Loading patient…</div>
+} @else if (errorMessage()) {
+  <div class="state-box">{{ errorMessage() }}</div>
+} @else {
+  @if (detail(); as d) {
+  <section class="banner patient">
+    <div class="banner-top">
+      <p class="banner-eyebrow">Patient record · {{ d.patient.email | maskEmail }}</p>
+      <span class="badge" [class.active]="d.patient.active" [class.inactive]="!d.patient.active">
+        {{ d.patient.active ? 'Active' : 'Inactive' }}
+      </span>
+    </div>
+    <h1 class="banner-name">{{ d.patient.fullName }}</h1>
+    <div class="banner-grid">
+      <div>
+        <span class="banner-label">DATE OF BIRTH</span>
+        <span class="banner-value">{{ d.patient.dateOfBirth | date: 'MMM d, y' }}</span>
+      </div>
+      <div>
+        <span class="banner-label">PRIMARY DOCTOR</span>
+        <span class="banner-value">
+          @if (d.patient.primaryDoctorId) {
+            <a [routerLink]="['/admin/doctors', d.patient.primaryDoctorId]">{{ d.primaryDoctorName }}</a>
+          } @else {
+            Not assigned
+          }
+        </span>
+      </div>
+      <div>
+        <span class="banner-label">ALLERGIES</span>
+        <span class="banner-value">{{ d.patient.allergies }}</span>
+      </div>
+      <div>
+        <span class="banner-label">SERVICES</span>
+        <span class="banner-value">{{ d.notes.length }}</span>
+      </div>
+    </div>
+  </section>
+
+  <h2 class="section-title">Services</h2>
+  <app-notes-table [notes]="d.notes" [showPatient]="false" (changed)="load()" />
+}
+}

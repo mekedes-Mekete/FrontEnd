@@ -1,0 +1,402 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:host {
+  display: block;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #334155;
+  background-color: #f8fafc;
+}
+
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar Styling */
+.sidebar {
+  width: 240px;
+  background-color: #050b14;
+  color: #ffffff;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.sidebar-top {
+  display: flex;
+  flex-direction: column;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 36px;
+}
+
+.logo-icon {
+  background-color: #059669;
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.logo-text {
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.02em;
+}
+
+.nav-header {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: #475569;
+  font-weight: 600;
+  margin-bottom: 12px;
+  padding-left: 8px;
+}
+
+.nav-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  color: #94a3b8;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.nav-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.nav-item:hover {
+  background-color: #0f172a;
+  color: #ffffff;
+}
+
+.nav-item.active {
+  background-color: #1e293b;
+  color: #ffffff;
+}
+
+.active-dot {
+  width: 6px;
+  height: 6px;
+  background-color: #10b981;
+  border-radius: 50%;
+  margin-left: auto;
+}
+
+/* User Card inside Sidebar bottom */
+.user-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background-color: #0f172a;
+  border-radius: 10px;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #0f766e;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.user-info .user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.user-info .user-role {
+  font-size: 11px;
+  color: #64748b;
+}
+
+/* Main Content Area */
+.main-content {
+  flex: 1;
+  padding: 32px;
+  overflow-y: auto;
+}
+
+.content-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Doctor Banner Card */
+.patient-banner {
+  background-color: #064e3b;
+  color: #ffffff;
+  padding: 32px;
+  border-radius: 16px;
+  margin-bottom: 32px;
+}
+
+.banner-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.banner-welcome {
+  font-size: 13px;
+  color: #6ee7b7;
+}
+
+.add-note-btn {
+  background-color: #10b981;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.banner-name {
+  font-size: 32px;
+  font-weight: 600;
+  margin: 8px 0 24px 0;
+}
+
+.banner-info-grid {
+  display: flex;
+  gap: 40px;
+}
+
+.info-label {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: #6ee7b7;
+  margin-bottom: 4px;
+}
+
+.info-value {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Medical Notes / Services Table Section */
+.notes-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.table-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.notes-main-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.notes-main-table th {
+  padding: 16px;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  border-bottom: 1px solid #f1f5f9;
+  background-color: #ffffff;
+}
+
+.notes-main-table td {
+  padding: 16px;
+  font-size: 14px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: top;
+}
+
+.patient-name-text {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.type-badge {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-block;
+  text-transform: lowercase;
+}
+
+.type-badge.followup {
+  background-color: #ccfbf1;
+  color: #0f766e;
+}
+
+.type-badge.lab {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.type-badge.consultation {
+  background-color: #e2e8f0;
+  color: #334155;
+}
+
+.note-detail-text {
+  color: #64748b;
+  line-height: 1.4;
+  display: block;
+  max-width: 320px;
+}
+
+.date-text {
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+/* Actions Column */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-toggle {
+  background: #f1f5f9;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #334155;
+}
+
+.btn-toggle:hover {
+  background: #e2e8f0;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: #059669;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.btn-link.disabled {
+  color: #cbd5e1;
+  cursor: not-allowed;
+}
+
+.btn-link.danger {
+  color: #ef4444;
+}
+
+/* Expanded Detail Row */
+.detail-row td {
+  background-color: #fafafa;
+  padding: 24px;
+}
+
+.detail-header {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+  margin-bottom: 16px;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.card {
+  padding: 20px;
+  border-radius: 12px;
+  line-height: 1.5;
+  font-size: 13px;
+}
+
+.original-note {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+}
+
+.ai-summary {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+}
+
+.card-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+  color: #94a3b8;
+}
+
+.ai-title {
+  color: #047857;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.disclaimer {
+  display: block;
+  margin-top: 16px;
+  font-size: 11px;
+  color: #059669;
+  opacity: 0.8;
+}

@@ -1,0 +1,165 @@
+<div class="dashboard-container">
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <div class="logo-container">
+        <div class="logo-icon">+</div>
+        <span class="logo-text">MediScribe AI</span>
+      </div>
+
+      <nav class="nav-section">
+        <p class="nav-header">NAVIGATION</p>
+        <a routerLink="/doctor" routerLinkActive="active" class="nav-item active">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="3" y="3" width="7" height="7" rx="1" />
+            <rect x="14" y="3" width="7" height="7" rx="1" />
+            <rect x="14" y="14" width="7" height="7" rx="1" />
+            <rect x="3" y="14" width="7" height="7" rx="1" />
+          </svg>
+          Dashboard
+          <span class="active-dot"></span>
+        </a>
+
+        <a routerLink="/patients" routerLinkActive="active" class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          Patients
+        </a>
+
+        <a routerLink="/doctors" routerLinkActive="active" class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="8.5" cy="7" r="4"></circle>
+            <line x1="20" y1="8" x2="20" y2="14"></line>
+            <line x1="23" y1="11" x2="17" y2="11"></line>
+          </svg>
+          Doctors
+        </a>
+      </nav>
+    </div>
+
+    <!-- User Profile Badge -->
+    <div class="user-card">
+      <div class="avatar">JH</div>
+      <div class="user-info">
+        <p class="user-name">{{ doctorProfile.name }}</p>
+        <p class="user-role">Physician</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="main-content">
+    <div class="content-wrapper">
+      
+      <!-- Doctor Banner Card -->
+      <section class="patient-banner">
+        <div class="banner-top-row">
+          <p class="banner-welcome">Physician dashboard</p>
+          <button class="add-note-btn" (click)="openAddNoteDialog()">
+        + Add note
+</button>
+        </div>
+        <h1 class="banner-name">{{ doctorProfile.name }}</h1>
+
+        <div class="banner-info-grid">
+          <div class="info-item">
+            <span class="info-label">SPECIALTY</span>
+            <span class="info-value">{{ doctorProfile.specialty }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">EMAIL</span>
+            <span class="info-value">{{ doctorProfile.email }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">MEMBER SINCE</span>
+            <span class="info-value">{{ doctorProfile.memberSince }}</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Services Section -->
+      <section class="notes-section">
+        <h2 class="section-title">Recent Services</h2>
+
+        <div class="table-card">
+          <div class="table-responsive">
+            <table class="notes-main-table">
+              <thead>
+                <tr>
+                  <th class="col-patient">PATIENT NAME</th>
+                  <th class="col-service">SERVICE</th>
+                  <th class="col-notes">PATIENT NOTES</th>
+                  <th class="col-visit">DATE OF VISIT</th>
+                  <th class="col-updated">LAST UPDATED</th>
+                  <th class="col-actions">ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngFor="let row of services">
+                  <!-- Main Row -->
+                  <tr [class.expanded-row]="row.expanded">
+                    <td class="cell-patient">
+                      <span class="patient-name-text">{{ row.patientName }}</span>
+                    </td>
+                    <td class="cell-service">
+                      <span class="type-badge" [ngClass]="row.serviceType">{{ row.serviceType }}</span>
+                    </td>
+                    <td class="cell-notes">
+                      <span class="note-detail-text">{{ row.patientNotes }}</span>
+                    </td>
+                    <td class="cell-visit">
+                      <span class="date-text">{{ row.dateOfVisit }}</span>
+                    </td>
+                    <td class="cell-updated">
+                      <span class="date-text">{{ row.lastUpdated }}</span>
+                    </td>
+                    <td class="cell-actions">
+                      <div class="action-buttons">
+                        <button class="btn-toggle" (click)="toggleExpand(row)">
+                          {{ row.expanded ? 'Collapse' : 'View details' }}
+                        </button>
+                        <button class="btn-link disabled" disabled>Edit</button>
+                        <button class="btn-link danger" (click)="deleteRecord(row)">Delete</button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <!-- Expanded Detail Card Row -->
+                  <tr *ngIf="row.expanded" class="detail-row">
+                    <td colspan="6">
+                      <div class="detail-container">
+                        <div class="detail-header" *ngIf="row.labCategory">
+                          {{ row.labCategory }}
+                        </div>
+                        <div class="detail-grid">
+                          <!-- Original Doctor Note -->
+                          <div class="card original-note">
+                            <div class="card-title">ORIGINAL DOCTOR NOTE</div>
+                            <p>{{ row.originalDoctorNote }}</p>
+                          </div>
+
+                          <!-- AI Friendly Summary -->
+                          <div class="card ai-summary">
+                            <div class="card-title ai-title">
+                              <span class="ai-icon">✦</span> AI-FRIENDLY SUMMARY
+                            </div>
+                            <p>{{ row.aiFriendlySummary }}</p>
+                            <span class="disclaimer">For clarity only. Follow your doctor's instructions.</span>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>

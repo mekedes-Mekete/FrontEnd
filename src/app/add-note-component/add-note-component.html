@@ -1,0 +1,58 @@
+<div class="dialog-container">
+  <button type="button" class="cancel-link" (click)="onCancel()">&lt; Cancel</button>
+
+  <h2 class="dialog-title">New Medical Note</h2>
+
+  <div class="dialog-card">
+    <form (ngSubmit)="onSubmit()">
+      <div class="form-row">
+        <div class="form-group flex-1">
+          <label class="form-label">PATIENT</label>
+          <select class="form-control" [(ngModel)]="formData.patient_id" name="patient_id" required>
+            <option *ngFor="let p of data.patients" [value]="p.id">
+              {{ p.first_name }} {{ p.last_name }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group flex-1">
+          <label class="form-label">NOTE TYPE</label>
+          <select class="form-control" [(ngModel)]="formData.service_type" name="service_type" required>
+            <option value="consultation">Consultation</option>
+            <option value="diagnosis">Diagnosis</option>
+            <option value="prescription">Prescription</option>
+            <option value="lab">Lab</option>
+            <option value="followup">Followup</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">TITLE</label>
+        <input 
+          type="text" 
+          class="form-control" 
+          placeholder="e.g. Annual Physical Examination" 
+          [(ngModel)]="formData.patient_notes" 
+          name="patient_notes" 
+          required />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">CLINICAL NOTES</label>
+        <textarea 
+          rows="6" 
+          class="form-control textarea" 
+          placeholder="Document findings, observations, diagnoses, and plan..." 
+          [(ngModel)]="formData.original_doctor_note" 
+          name="original_doctor_note" 
+          required></textarea>
+      </div>
+
+      <div class="dialog-actions">
+        <button type="button" class="btn-secondary" (click)="onCancel()">Cancel</button>
+        <button type="submit" class="btn-primary">Save Note</button>
+      </div>
+    </form>
+  </div>
+</div>
