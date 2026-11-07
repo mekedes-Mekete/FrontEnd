@@ -1,63 +1,85 @@
-import { Component } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { ServiceNote, UserAccount } from '../models/clinic.models';
+import { AuthService } from '../services/auth';
+import { MOCK_NOTES, MOCK_USERS } from '../services/mock-clinic-data';
+import { InitialsPipe } from '../shared/initials.pipe';
 
-export interface PatientInfo {
-  name: string;
-  dob: string;
-  primaryDoctor: string;
-  allergies: string;
-}
+// ---------------------------------------------------------------------------
+// MOCK MODE. Runs on MOCK_USERS / MOCK_NOTES. Replace with the backend calls
+// (profile + "my services") once they exist. The server must only return the
+// logged-in patient's own notes (US16, US17).
+// ---------------------------------------------------------------------------
 
-export interface ServiceRow {
-  serviceType: string;
-  patientNotes: string;
-  dateOfVisit: string;
-  lastUpdated: string;
-  title: string;
-  originalNote: string;
-  insightsSummary: string;
-  expanded?: boolean;
+/** MOCK: the logged-in patient. Replace with the id from the JWT / AuthService. */
+const CURRENT_PATIENT_ID = 201;
+
+/** NFR3: shown next to every summary. */
+const SUMMARY_DISCLAIMER = "For clarity only. Follow your clinician's instructions.";
+
+/** A service (note) with the doctor's name resolved. */
+interface ServiceView extends ServiceNote {
+  doctorName: string;
 }
 
 @Component({
   selector: 'app-patient-component',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, InitialsPipe],
   templateUrl: './patient-component.html',
   styleUrl: './patient-component.css',
 })
 export class PatientComponent {
-  patient: PatientInfo = {
-    name: 'Thomas Brennan',
-    dob: '1978-04-12',
-    primaryDoctor: 'Dr. James Harrington',
-    allergies: 'Penicillin, Sulfa'
-  };
+  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
 
-  serviceRows: ServiceRow[] = [
-    {
-      serviceType: 'consultation',
-      patientNotes: 'Your annual exam was reassuring. Your heart, lungs, oxygen level, and abdominal exam were normal. Your blood pressure i...',
-      dateOfVisit: 'Sep 15, 2024',
-      lastUpdated: 'Sep 15, 2024',
-      title: 'ANNUAL PHYSICAL EXAMINATION',
-      originalNote: 'Patient presents for routine annual physical. BP 128/82 mmHg, HR 72 bpm, SpO2 98%. Weight 83kg, BMI 26.4. Lungs clear to auscultation. Heart rhythm regular, no murmurs detected. Abdomen soft and non-tender. Patient reports mild fatigue over past 6 weeks, attributed to work stress. Recommended blood panel and follow-up in 3 months. Discussed diet and exercise modifications.',
-      insightsSummary: 'Your annual exam was reassuring. Your heart, lungs, oxygen level, and abdominal exam were normal. Your blood pressure is slightly above the ideal range, and you mentioned some recent tiredness that may be related to stress. Your next steps are to complete the recommended blood tests, keep up healthy food and exercise habits, and return in three months.',
-      expanded: true
-    },
-    {
-      serviceType: 'lab',
-      patientNotes: 'Your kidney tests were normal. Your blood sugar and cholesterol are a little higher than recommended, and one live...',
-      dateOfVisit: 'Sep 22, 2024',
-      lastUpdated: 'Sep 22, 2024',
-      title: 'BLOOD PANEL LAB RESULTS',
-      originalNote: 'Fasting Glucose 105 mg/dL, HbA1c 5.8%, Total Cholesterol 215 mg/dL. Renal panel within normal limits. ALT slightly elevated at 45 U/L.',
-      insightsSummary: 'Your kidney tests were normal. Your blood sugar and cholesterol are a little higher than recommended, and one liver enzyme is slightly elevated.',
-      expanded: false
-    }
-  ];
+  readonly disclaimer = SUMMARY_DISCLAIMER;
 
-  toggleDetails(row: ServiceRow): void {
-    row.expanded = !row.expanded;
+  // ---- US16: profile ------------------------------------------------------
+  readonly patient: UserAccount = MOCK_USERS.find(u => u.id === CURRENT_PATIENT_ID)!;
+  readonly primaryDoctorName: string =
+    MOCK_USERS.find(u => u.id === this.patient.primaryDoctorId)?.fullName ?? 'Not assigned';
+  /** Name in the top bar. Falls back to the mock patient if nobody is signed in (page refresh, demo). */
+  readonly displayName: string = this.auth.currentUser?.fullName ?? this.patient.fullName;
+
+  // ---- US16: only this patient's own services, newest first ---------------
+  private readonly allNotes = signal<ServiceNote[]>(MOCK_NOTES.map(n => ({ ...n })));
+
+  readonly serviceRows = computed<ServiceView[]>(() =>
+    this.allNotes()
+      .filter(n => n.patientId === CURRENT_PATIENT_ID)
+      .sort((a, b) => b.dateOfVisit.localeCompare(a.dateOfVisit) || b.createdAt.localeCompare(a.createdAt))
+      .map(n => ({
+        ...n,
+        doctorName: MOCK_USERS.find(u => u.id === n.doctorId)?.fullName ?? 'Unknown',
+      }))
+  );
+
+  // ---- Sign out (US2) -----------------------------------------------------
+  signOut(): void {
+    this.auth.logout();
+    this.router.navigate(['/login']);
+  }
+
+  // ---- US17: open a service ----------------------------------------------
+  /** The first service starts open, like the previous design. */
+  readonly expandedIds = signal<ReadonlySet<number>>(new Set<number>(this.firstServiceId()));
+
+  isExpanded(id: number): boolean {
+    return this.expandedIds().has(id);
+  }
+
+  toggleDetails(row: ServiceView): void {
+    this.expandedIds.update(ids => {
+      const next = new Set(ids);
+      if (!next.delete(row.id)) next.add(row.id);
+      return next;
+    });
+  }
+
+  private firstServiceId(): number[] {
+    const first = this.serviceRows()[0];
+    return first ? [first.id] : [];
   }
 }

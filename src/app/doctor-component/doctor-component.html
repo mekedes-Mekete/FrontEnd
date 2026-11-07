@@ -9,7 +9,8 @@
 
       <nav class="nav-section">
         <p class="nav-header">NAVIGATION</p>
-        <a routerLink="/doctor" routerLinkActive="active" class="nav-item active">
+
+        <button type="button" class="nav-item" [class.active]="view() === 'dashboard'" (click)="showDashboard()">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
             <rect x="3" y="3" width="7" height="7" rx="1" />
             <rect x="14" y="3" width="7" height="7" rx="1" />
@@ -17,149 +18,376 @@
             <rect x="3" y="14" width="7" height="7" rx="1" />
           </svg>
           Dashboard
-          <span class="active-dot"></span>
-        </a>
+          @if (view() === 'dashboard') { <span class="active-dot"></span> }
+        </button>
 
-        <a routerLink="/patients" routerLinkActive="active" class="nav-item">
+        <button type="button" class="nav-item" [class.active]="view() === 'patients' || view() === 'patient'" (click)="showPatients()">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
             <circle cx="12" cy="7" r="4"></circle>
           </svg>
-          Patients
-        </a>
-
-        <a routerLink="/doctors" routerLinkActive="active" class="nav-item">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-            <circle cx="8.5" cy="7" r="4"></circle>
-            <line x1="20" y1="8" x2="20" y2="14"></line>
-            <line x1="23" y1="11" x2="17" y2="11"></line>
-          </svg>
-          Doctors
-        </a>
+          My patients
+          @if (view() === 'patients' || view() === 'patient') { <span class="active-dot"></span> }
+        </button>
       </nav>
     </div>
 
-    <!-- User Profile Badge -->
-    <div class="user-card">
-      <div class="avatar">JH</div>
-      <div class="user-info">
-        <p class="user-name">{{ doctorProfile.name }}</p>
-        <p class="user-role">Physician</p>
-      </div>
-    </div>
   </aside>
 
   <!-- Main Content Area -->
-  <main class="main-content">
-    <div class="content-wrapper">
-      
-      <!-- Doctor Banner Card -->
-      <section class="patient-banner">
-        <div class="banner-top-row">
-          <p class="banner-welcome">Physician dashboard</p>
-          <button class="add-note-btn" (click)="openAddNoteDialog()">
-        + Add note
-</button>
+  <main class="main-wrapper">
+    <header class="top-header">
+      <div class="header-user">
+        <div class="user-text">
+          <span class="user-name">{{ displayName }}</span>
+          <span class="user-role">Physician</span>
         </div>
-        <h1 class="banner-name">{{ doctorProfile.name }}</h1>
+        <div class="user-avatar">{{ displayName | initials }}</div>
+        <button type="button" class="sign-out-btn" (click)="signOut()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="signout-icon" aria-hidden="true">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          Sign out
+        </button>
+      </div>
+    </header>
 
-        <div class="banner-info-grid">
-          <div class="info-item">
-            <span class="info-label">SPECIALTY</span>
-            <span class="info-value">{{ doctorProfile.specialty }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">EMAIL</span>
-            <span class="info-value">{{ doctorProfile.email }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">MEMBER SINCE</span>
-            <span class="info-value">{{ doctorProfile.memberSince }}</span>
-          </div>
+    <div class="content-body">
+
+      @if (toast(); as t) {
+        <div class="toast" [class.error]="t.kind === 'error'" role="status">
+          <span>{{ t.text }}</span>
+          <button type="button" class="toast-close" (click)="dismissToast()" aria-label="Dismiss">×</button>
         </div>
-      </section>
+      }
 
-      <!-- Services Section -->
-      <section class="notes-section">
-        <h2 class="section-title">Recent Services</h2>
+      @switch (view()) {
 
-        <div class="table-card">
-          <div class="table-responsive">
-            <table class="notes-main-table">
-              <thead>
-                <tr>
-                  <th class="col-patient">PATIENT NAME</th>
-                  <th class="col-service">SERVICE</th>
-                  <th class="col-notes">PATIENT NOTES</th>
-                  <th class="col-visit">DATE OF VISIT</th>
-                  <th class="col-updated">LAST UPDATED</th>
-                  <th class="col-actions">ACTIONS</th>
-                </tr>
-              </thead>
-              <tbody>
-                <ng-container *ngFor="let row of services">
-                  <!-- Main Row -->
-                  <tr [class.expanded-row]="row.expanded">
-                    <td class="cell-patient">
-                      <span class="patient-name-text">{{ row.patientName }}</span>
-                    </td>
-                    <td class="cell-service">
-                      <span class="type-badge" [ngClass]="row.serviceType">{{ row.serviceType }}</span>
-                    </td>
-                    <td class="cell-notes">
-                      <span class="note-detail-text">{{ row.patientNotes }}</span>
-                    </td>
-                    <td class="cell-visit">
-                      <span class="date-text">{{ row.dateOfVisit }}</span>
-                    </td>
-                    <td class="cell-updated">
-                      <span class="date-text">{{ row.lastUpdated }}</span>
-                    </td>
-                    <td class="cell-actions">
-                      <div class="action-buttons">
-                        <button class="btn-toggle" (click)="toggleExpand(row)">
-                          {{ row.expanded ? 'Collapse' : 'View details' }}
-                        </button>
-                        <button class="btn-link disabled" disabled>Edit</button>
-                        <button class="btn-link danger" (click)="deleteRecord(row)">Delete</button>
-                      </div>
-                    </td>
-                  </tr>
+        <!-- ============ US8: DASHBOARD ============ -->
+        @case ('dashboard') {
+          <div class="page-header"><h1 class="page-title">Dashboard</h1></div>
 
-                  <!-- Expanded Detail Card Row -->
-                  <tr *ngIf="row.expanded" class="detail-row">
-                    <td colspan="6">
-                      <div class="detail-container">
-                        <div class="detail-header" *ngIf="row.labCategory">
-                          {{ row.labCategory }}
-                        </div>
-                        <div class="detail-grid">
-                          <!-- Original Doctor Note -->
-                          <div class="card original-note">
-                            <div class="card-title">ORIGINAL DOCTOR NOTE</div>
-                            <p>{{ row.originalDoctorNote }}</p>
+          <section class="patient-banner">
+            <div class="banner-top-row">
+              <p class="banner-welcome">Physician dashboard</p>
+              <button type="button" class="add-note-btn" (click)="startNote(null)">+ Add note</button>
+            </div>
+            <h1 class="banner-name">{{ doctor.fullName }}</h1>
+
+            <div class="banner-info-grid">
+              <div class="info-item">
+                <span class="info-label">SPECIALTY</span>
+                <span class="info-value">{{ doctor.specialty }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">EMAIL</span>
+                <span class="info-value">{{ doctor.email }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">MEMBER SINCE</span>
+                <span class="info-value">{{ doctor.createdAt | date: 'MMMM y' }}</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="notes-section">
+            <h2 class="section-title">Recent Services</h2>
+            <ng-container *ngTemplateOutlet="notesTable; context: { rows: recentRows(), mode: 'mine' }" />
+          </section>
+        }
+
+        <!-- ============ US9: PATIENT LIST ============ -->
+        @case ('patients') {
+          <div class="page-header"><h1 class="page-title">My patients</h1></div>
+
+          <section class="notes-section">
+
+            <div class="table-card">
+              <div class="table-responsive">
+                <table class="notes-main-table">
+                  <thead>
+                    <tr>
+                      <th>PATIENT</th>
+                      <th>DATE OF BIRTH</th>
+                      <th>ALLERGIES</th>
+                      <th>SERVICES</th>
+                      <th class="col-actions">ACTIONS</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (p of patients; track p.id) {
+                      <tr>
+                        <td><span class="patient-name-text">{{ p.fullName }}</span></td>
+                        <td><span class="date-text">{{ p.dateOfBirth | date: 'MMM d, y' }}</span></td>
+                        <td>{{ p.allergies }}</td>
+                        <td>{{ noteCounts().get(p.id) ?? 0 }}</td>
+                        <td>
+                          <div class="action-buttons">
+                            <button type="button" class="btn-toggle" (click)="openPatient(p)">Open</button>
+                            <button type="button" class="btn-link" (click)="openPatient(p); startNote(p.id)">Write note</button>
                           </div>
+                        </td>
+                      </tr>
+                    } @empty {
+                      <tr><td colspan="5" class="empty-cell">You have no patients yet.</td></tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        }
 
-                          <!-- AI Friendly Summary -->
-                          <div class="card ai-summary">
-                            <div class="card-title ai-title">
-                              <span class="ai-icon">✦</span> AI-FRIENDLY SUMMARY
-                            </div>
-                            <p>{{ row.aiFriendlySummary }}</p>
-                            <span class="disclaimer">For clarity only. Follow your doctor's instructions.</span>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                </ng-container>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
+        <!-- ============ US9: ONE PATIENT ============ -->
+        @case ('patient') {
+          @if (selectedPatient(); as patient) {
+            <button type="button" class="back-link" (click)="showPatients()">‹ My patients</button>
+
+            <section class="patient-banner">
+              <div class="banner-top-row">
+                <p class="banner-welcome">Patient</p>
+                <button type="button" class="add-note-btn" (click)="startNote(patient.id)">+ Write note for this patient</button>
+              </div>
+              <h1 class="banner-name">{{ patient.fullName }}</h1>
+
+              <div class="banner-info-grid">
+                <div class="info-item">
+                  <span class="info-label">DATE OF BIRTH</span>
+                  <span class="info-value">{{ patient.dateOfBirth | date: 'MMM d, y' }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">PRIMARY DOCTOR</span>
+                  <span class="info-value">{{ primaryDoctorName(patient) }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">ALLERGIES</span>
+                  <span class="info-value">{{ patient.allergies }}</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="notes-section">
+              <h2 class="section-title">Services</h2>
+              <ng-container *ngTemplateOutlet="notesTable; context: { rows: selectedPatientRows(), mode: 'patient' }" />
+            </section>
+          }
+        }
+
+        <!-- ============ US10: NEW NOTE ============ -->
+        @case ('new-note') {
+          <button type="button" class="back-link" (click)="cancelNote()">‹ Cancel</button>
+          <div class="page-header"><h1 class="page-title">New medical note</h1></div>
+
+          <form class="form-card" [formGroup]="noteForm" (ngSubmit)="saveNote()" novalidate>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="nf-patient">PATIENT</label>
+                <select id="nf-patient" class="form-control" formControlName="patientId"
+                        [class.invalid]="noteForm.controls.patientId.invalid && noteForm.controls.patientId.touched">
+                  <option [ngValue]="null" disabled>Choose a patient…</option>
+                  @for (p of patients; track p.id) {
+                    <option [ngValue]="p.id">{{ p.fullName }}</option>
+                  }
+                </select>
+                @if (noteForm.controls.patientId.invalid && noteForm.controls.patientId.touched) {
+                  <p class="field-error">Choose a patient.</p>
+                }
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="nf-type">NOTE TYPE</label>
+                <select id="nf-type" class="form-control" formControlName="serviceType">
+                  @for (t of serviceTypes; track t.value) {
+                    <option [ngValue]="t.value">{{ t.label }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="nf-date">DATE OF VISIT</label>
+                <input id="nf-date" type="date" class="form-control" formControlName="dateOfVisit" [max]="maxVisitDate"
+                       [class.invalid]="noteForm.controls.dateOfVisit.invalid && noteForm.controls.dateOfVisit.touched" />
+                @if (noteForm.controls.dateOfVisit.touched && noteForm.controls.dateOfVisit.errors; as e) {
+                  <p class="field-error">{{ e['future'] ? 'The visit date cannot be in the future.' : 'Enter the date of the visit.' }}</p>
+                }
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="nf-title">TITLE</label>
+              <input id="nf-title" type="text" class="form-control" placeholder="e.g. Annual Physical Examination"
+                     formControlName="title"
+                     [class.invalid]="noteForm.controls.title.invalid && noteForm.controls.title.touched" />
+              @if (noteForm.controls.title.touched && noteForm.controls.title.errors; as e) {
+                <p class="field-error">{{ e['maxlength'] ? 'The title must be 120 characters or fewer.' : 'Enter a title.' }}</p>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="nf-note">CLINICAL NOTES</label>
+              <textarea id="nf-note" rows="7" class="form-control"
+                        placeholder="Document findings, observations, diagnoses, and plan..."
+                        formControlName="originalNote"
+                        [class.invalid]="noteForm.controls.originalNote.invalid && noteForm.controls.originalNote.touched"></textarea>
+              @if (noteForm.controls.originalNote.touched && noteForm.controls.originalNote.errors; as e) {
+                <p class="field-error">{{ e['minlength'] ? 'Write at least 10 characters so the summary has something to work with.' : 'Enter the clinical notes.' }}</p>
+              }
+            </div>
+
+            <p class="form-hint">After saving, a plain-language summary for the patient is prepared automatically.</p>
+
+            <div class="form-actions">
+              <button type="button" class="btn-secondary" (click)="cancelNote()">Cancel</button>
+              <button type="submit" class="btn-primary">Save note</button>
+            </div>
+          </form>
+        }
+      }
 
     </div>
   </main>
 </div>
+
+<!-- =====================================================================
+     Reusable services table (dashboard + patient page).
+     mode 'mine'    -> shows the PATIENT column
+     mode 'patient' -> shows the DOCTOR column
+     ===================================================================== -->
+<ng-template #notesTable let-rows="rows" let-mode="mode">
+  <div class="table-card">
+    <div class="table-responsive">
+      <table class="notes-main-table">
+        <thead>
+          <tr>
+            <th>{{ mode === 'mine' ? 'PATIENT' : 'DOCTOR' }}</th>
+            <th>SERVICE</th>
+            <th>TITLE</th>
+            <th>DATE OF VISIT</th>
+            <th>LAST UPDATED</th>
+            <th>SUMMARY</th>
+            <th class="col-actions">ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows; track row.id) {
+            <tr [class.expanded-row]="isExpanded(row.id)">
+              <td><span class="patient-name-text">{{ mode === 'mine' ? row.patientName : row.doctorName }}</span></td>
+              <td><span class="type-badge" [ngClass]="row.serviceType">{{ row.serviceType }}</span></td>
+              <td><span class="note-detail-text">{{ row.title }}</span></td>
+              <td><span class="date-text">{{ row.dateOfVisit | date: 'MMM d, y' }}</span></td>
+              <td><span class="date-text">{{ row.lastUpdated | date: 'MMM d, y' }}</span></td>
+              <td>
+                <span class="status-chip" [ngClass]="row.summaryStatus.toLowerCase()">
+                  @switch (row.summaryStatus) {
+                    @case ('READY') { Ready }
+                    @case ('PENDING') { Preparing… }
+                    @default { Failed }
+                  }
+                </span>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button type="button" class="btn-toggle" (click)="toggleExpand(row.id)">
+                    {{ isExpanded(row.id) ? 'Collapse' : 'View details' }}
+                  </button>
+                  @if (isOwn(row)) {
+                    <button type="button" class="btn-link" (click)="startEdit(row)">Edit</button>
+                    <button type="button" class="btn-link danger" (click)="deleteNote(row)">Delete</button>
+                  }
+                </div>
+              </td>
+            </tr>
+
+            @if (isExpanded(row.id)) {
+              <tr class="detail-row">
+                <td colspan="7">
+                  <ng-container *ngTemplateOutlet="noteDetail; context: { note: row }" />
+                </td>
+              </tr>
+            }
+          } @empty {
+            <tr><td colspan="7" class="empty-cell">No services recorded yet.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</ng-template>
+
+<!-- US13 / US14: original note next to the summary, with inline edit -->
+<ng-template #noteDetail let-note="note">
+  <div class="detail-container">
+    <div class="detail-header">{{ note.title }}</div>
+
+    @if (editingId() === note.id) {
+      <form class="edit-form" [formGroup]="editForm" (ngSubmit)="saveEdit(note)" novalidate>
+        <div class="form-group">
+          <label class="form-label">TITLE</label>
+          <input type="text" class="form-control" formControlName="title"
+                 [class.invalid]="editForm.controls.title.invalid && editForm.controls.title.touched" />
+          @if (editForm.controls.title.touched && editForm.controls.title.errors; as e) {
+            <p class="field-error">{{ e['maxlength'] ? 'The title must be 120 characters or fewer.' : 'Enter a title.' }}</p>
+          }
+        </div>
+
+        <div class="detail-grid">
+          <div class="form-group">
+            <label class="form-label">ORIGINAL DOCTOR NOTE</label>
+            <textarea rows="8" class="form-control" formControlName="originalNote"
+                      [class.invalid]="editForm.controls.originalNote.invalid && editForm.controls.originalNote.touched"></textarea>
+            @if (editForm.controls.originalNote.invalid && editForm.controls.originalNote.touched) {
+              <p class="field-error">The note cannot be empty.</p>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">PLAIN-LANGUAGE SUMMARY</label>
+            @if (note.summaryStatus === 'READY') {
+              <textarea rows="8" class="form-control" formControlName="summary"
+                        [class.invalid]="editForm.controls.summary.invalid && editForm.controls.summary.touched"></textarea>
+              @if (editForm.controls.summary.invalid && editForm.controls.summary.touched) {
+                <p class="field-error">The summary cannot be empty.</p>
+              }
+            } @else {
+              <p class="muted-text">There is no summary to edit yet.</p>
+            }
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" (click)="cancelEdit()">Cancel</button>
+          <button type="submit" class="btn-primary">Save changes</button>
+        </div>
+      </form>
+    } @else {
+      <div class="detail-grid">
+        <div class="card original-note">
+          <div class="card-title">ORIGINAL DOCTOR NOTE</div>
+          <p class="pre-wrap">{{ note.originalNote }}</p>
+        </div>
+
+        <div class="card ai-summary" [class.ai-failed]="note.summaryStatus === 'FAILED'">
+          <div class="card-title ai-title"><span class="ai-icon">✦</span> PLAIN-LANGUAGE SUMMARY</div>
+
+          @switch (note.summaryStatus) {
+            @case ('READY') {
+              <p class="pre-wrap">{{ note.summary }}</p>
+              <span class="disclaimer">{{ disclaimer }}</span>
+            }
+            @case ('PENDING') {
+              <p class="muted-text">The summary is being prepared. This usually takes a few seconds.</p>
+            }
+            @default {
+              <p>The summary could not be created. Your note was saved and is not affected.</p>
+              @if (isOwn(note)) {
+                <button type="button" class="btn-toggle retry-btn" (click)="requestSummary(note.id)">Try again</button>
+              }
+            }
+          }
+        </div>
+      </div>
+    }
+  </div>
+</ng-template>

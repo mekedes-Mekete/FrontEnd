@@ -2,291 +2,159 @@
 
   <!-- Sidebar Navigation -->
   <aside class="sidebar">
-
     <div class="sidebar-top">
-
-      <!-- Logo -->
       <div class="logo-container">
         <div class="logo-icon">+</div>
         <span class="logo-text">MediScribe AI</span>
       </div>
 
-      <!-- Navigation -->
       <nav class="nav-section">
-
         <p class="nav-header">NAVIGATION</p>
 
-        <a href="#" class="nav-item active">
-
-          <div class="nav-icon grid-icon">
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-
-          <span>Dashboard</span>
-
+        <a href="#" class="nav-item active" (click)="$event.preventDefault()">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7" rx="1" />
+            <rect x="14" y="3" width="7" height="7" rx="1" />
+            <rect x="14" y="14" width="7" height="7" rx="1" />
+            <rect x="3" y="14" width="7" height="7" rx="1" />
+          </svg>
+          Dashboard
           <span class="active-dot"></span>
-
         </a>
-
       </nav>
-
-    </div>
-
-
-    <!-- Patient Profile -->
-    <div class="user-card">
-
-      <div class="avatar">
-        TB
-      </div>
-
-      <div class="user-info">
-
-        <p class="user-name">
-          {{ patient.name }}
-        </p>
-
-        <p class="user-role">
-          Patient
-        </p>
-
-      </div>
-
     </div>
 
   </aside>
 
-
   <!-- Main Content -->
-  <main class="main-content">
-
-    <div class="content-wrapper">
-
-      <!-- Patient Banner -->
-      <section class="patient-banner">
-
-        <div class="banner-top-row">
-
-          <div>
-            <p class="banner-welcome">
-              Welcome back
-            </p>
-
-            <h1 class="banner-name">
-              {{ patient.name }}
-            </h1>
-          </div>
-
+  <main class="main-wrapper">
+    <header class="top-header">
+      <div class="header-user">
+        <div class="user-text">
+          <span class="user-name">{{ displayName }}</span>
+          <span class="user-role">Patient</span>
         </div>
+        <div class="user-avatar">{{ displayName | initials }}</div>
+        <button type="button" class="sign-out-btn" (click)="signOut()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="signout-icon" aria-hidden="true">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          Sign out
+        </button>
+      </div>
+    </header>
 
+    <div class="content-body">
+      <div class="page-header"><h1 class="page-title">Dashboard</h1></div>
+
+      <!-- US16: welcome card -->
+      <section class="patient-banner">
+        <div class="banner-top-row">
+          <div>
+            <p class="banner-welcome">Welcome back</p>
+            <h1 class="banner-name">{{ patient.fullName }}</h1>
+          </div>
+        </div>
 
         <div class="banner-info-grid">
-
           <div class="info-item">
-
-            <span class="info-label">
-              DATE OF BIRTH
-            </span>
-
-            <span class="info-value">
-              {{ patient.dob }}
-            </span>
-
+            <span class="info-label">DATE OF BIRTH</span>
+            <span class="info-value">{{ patient.dateOfBirth | date: 'MMM d, y' }}</span>
           </div>
 
-
           <div class="info-item">
-
-            <span class="info-label">
-              PRIMARY DOCTOR
-            </span>
-
-            <span class="info-value">
-              {{ patient.primaryDoctor }}
-            </span>
-
+            <span class="info-label">PRIMARY DOCTOR</span>
+            <span class="info-value">{{ primaryDoctorName }}</span>
           </div>
 
-
           <div class="info-item">
-
-            <span class="info-label">
-              ALLERGIES
-            </span>
-
-            <span class="info-value">
-              {{ patient.allergies }}
-            </span>
-
+            <span class="info-label">ALLERGIES</span>
+            <span class="info-value">{{ patient.allergies }}</span>
           </div>
-
         </div>
-
       </section>
 
-
-      <!-- Services Section -->
+      <!-- US16: my services -->
       <section class="services-section">
-
-        <h2 class="section-title">
-          Services
-        </h2>
-
+        <h2 class="section-title">Services</h2>
 
         <div class="services-card">
-
-          <!-- Table Header -->
           <div class="services-header">
-
-            <span class="col-service">
-              SERVICE
-            </span>
-
-            <span class="col-notes">
-              PATIENT NOTES
-            </span>
-
-            <span class="col-date">
-              DATE OF VISIT
-            </span>
-
-            <span class="col-updated">
-              LAST UPDATED
-            </span>
-
-            <span class="col-actions">
-              ACTIONS
-            </span>
-
+            <span class="col-service">SERVICE</span>
+            <span class="col-notes">SUMMARY</span>
+            <span class="col-date">DATE OF VISIT</span>
+            <span class="col-updated">LAST UPDATED</span>
+            <span class="col-actions">ACTIONS</span>
           </div>
 
+          @for (item of serviceRows(); track item.id) {
+            <div class="service-row-group">
 
-          <!-- Services -->
-          <div
-            *ngFor="let item of serviceRows"
-            class="service-row-group"
-          >
-
-            <!-- Summary Row -->
-            <div class="service-summary-row">
-
-              <div class="col-service">
-
-                <span
-                  class="badge"
-                  [ngClass]="item.serviceType"
-                >
-                  {{ item.serviceType }}
-                </span>
-
-              </div>
-
-
-              <div class="col-notes truncate">
-
-                {{ item.patientNotes }}
-
-              </div>
-
-
-              <div class="col-date">
-
-                {{ item.dateOfVisit }}
-
-              </div>
-
-
-              <div class="col-updated">
-
-                {{ item.lastUpdated }}
-
-              </div>
-
-
-              <div class="col-actions">
-
-                <button
-                  type="button"
-                  class="action-btn"
-                  (click)="toggleDetails(item)"
-                >
-
-                  {{ item.expanded ? 'Collapse' : 'View details' }}
-
-                </button>
-
-              </div>
-
-            </div>
-
-
-            <!-- Expanded Detail -->
-            <div
-              *ngIf="item.expanded"
-              class="service-expanded-content"
-            >
-
-              <h3 class="expanded-title">
-                {{ item.title }}
-              </h3>
-
-
-              <div class="split-container">
-
-                <!-- Original Doctor Note -->
-                <div class="note-box original-box">
-
-                  <p class="box-label">
-                    ORIGINAL DOCTOR NOTE
-                  </p>
-
-                  <p class="box-text">
-                    {{ item.originalNote }}
-                  </p>
-
+              <div class="service-summary-row">
+                <div class="col-service">
+                  <span class="badge" [ngClass]="item.serviceType">{{ item.serviceType }}</span>
                 </div>
 
+                <div class="col-notes truncate">
+                  @if (item.summaryStatus === 'READY') {
+                    {{ item.summary }}
+                  } @else {
+                    <span class="muted">Your summary is not available yet.</span>
+                  }
+                </div>
 
-                <!-- Patient Summary -->
-                <div class="note-box insights-box">
+                <div class="col-date">{{ item.dateOfVisit | date: 'MMM d, y' }}</div>
+                <div class="col-updated">{{ item.lastUpdated | date: 'MMM d, y' }}</div>
 
-                  <div class="insights-label-wrapper">
+                <div class="col-actions">
+                  <button type="button" class="action-btn" (click)="toggleDetails(item)">
+                    {{ isExpanded(item.id) ? 'Collapse' : 'View details' }}
+                  </button>
+                </div>
+              </div>
 
-                    <span class="insights-sparkle">
-                      ✦
-                    </span>
+              <!-- US17: original note and easy summary side by side -->
+              @if (isExpanded(item.id)) {
+                <div class="service-expanded-content">
+                  <h3 class="expanded-title">{{ item.title }}</h3>
+                  <p class="expanded-meta">Seen by {{ item.doctorName }}</p>
 
-                    <p class="box-label insights-label">
-                      PATIENT SUMMARY
-                    </p>
+                  <div class="split-container">
+                    <div class="note-box original-box">
+                      <p class="box-label">ORIGINAL DOCTOR NOTE</p>
+                      <p class="box-text pre-wrap">{{ item.originalNote }}</p>
+                    </div>
 
+                    <div class="note-box insights-box">
+                      <div class="insights-label-wrapper">
+                        <span class="insights-sparkle">✦</span>
+                        <p class="box-label insights-label">PATIENT SUMMARY</p>
+                      </div>
+
+                      @if (item.summaryStatus === 'READY') {
+                        <p class="box-text insights-text pre-wrap">{{ item.summary }}</p>
+                        <p class="insights-disclaimer">{{ disclaimer }}</p>
+                      } @else {
+                        <p class="box-text muted">
+                          Your easy-to-read summary is not available yet. Please read the doctor's note on the left,
+                          or ask your clinician if you have questions.
+                        </p>
+                      }
+                    </div>
                   </div>
-
-                  <p class="box-text insights-text">
-                    {{ item.insightsSummary }}
-                  </p>
-
-                  <p class="insights-disclaimer">
-                    For clarity only. Follow your clinician's instructions.
-                  </p>
-
                 </div>
-
-              </div>
+              }
 
             </div>
-
-          </div>
-
+          } @empty {
+            <div class="empty-state">No services have been recorded for you yet.</div>
+          }
         </div>
-
       </section>
 
     </div>
-
   </main>
 
 </div>

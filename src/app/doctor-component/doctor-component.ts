@@ -1,133 +1,336 @@
-import { Component } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { AddNoteComponent, AddNotePayload, Patient } from '../add-note-component/add-note-component';
+import { Router } from '@angular/router';
+import { ServiceNote, ServiceType, UserAccount } from '../models/clinic.models';
+import { AuthService } from '../services/auth';
+import { MOCK_NOTES, MOCK_USERS } from '../services/mock-clinic-data';
+import { ConfirmDialogComponent } from '../shared/confirm-dialog-component/confirm-dialog-component';
+import { localToday, notBlank, notInFuture } from '../shared/form-validators';
+import { InitialsPipe } from '../shared/initials.pipe';
 
-export interface DoctorProfile {
-  id: number;
-  name: string;
-  specialty: string;
-  email: string;
-  memberSince: string;
-}
+// ---------------------------------------------------------------------------
+// MOCK MODE. Everything below runs on MOCK_USERS / MOCK_NOTES (two "tables":
+// users and notes). Swap the marked spots for HTTP calls once the backend
+// endpoints exist.
+// ---------------------------------------------------------------------------
 
-export interface ServiceRecord {
-  id: string;
+/** MOCK: the logged-in doctor. Replace with the id from the JWT / AuthService. */
+const CURRENT_DOCTOR_ID = 101;
+
+/** NFR3: shown next to every summary. */
+const SUMMARY_DISCLAIMER = "For clarity only. Follow your clinician's instructions.";
+
+/** MOCK AI: a note that contains this text makes the fake summary call fail (US11.3 demo). */
+const SIMULATE_AI_FAILURE = '[ai-fail]';
+
+type View = 'dashboard' | 'patients' | 'patient' | 'new-note';
+
+/** A note with names resolved, ready for the tables. */
+interface NoteView extends ServiceNote {
   patientName: string;
-  serviceType: 'followup' | 'lab' | 'consultation' | 'diagnosis' | 'prescription';
-  patientNotes: string;
-  dateOfVisit: string;
-  lastUpdated: string;
-  expanded?: boolean;
-  labCategory?: string;
-  originalDoctorNote?: string;
-  aiFriendlySummary?: string;
+  doctorName: string;
 }
+
+const SERVICE_TYPES: { value: ServiceType; label: string }[] = [
+  { value: 'consultation', label: 'Consultation' },
+  { value: 'diagnosis', label: 'Diagnosis' },
+  { value: 'prescription', label: 'Prescription' },
+  { value: 'lab', label: 'Lab' },
+  { value: 'followup', label: 'Follow-up' },
+];
+
+function nameOf(userId: number): string {
+  return MOCK_USERS.find(u => u.id === userId)?.fullName ?? 'Unknown';
+}
+
+function localNow(): string {
+  const d = new Date();
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+}
+
+const newestFirst = (a: ServiceNote, b: ServiceNote): number =>
+  b.dateOfVisit.localeCompare(a.dateOfVisit) || b.createdAt.localeCompare(a.createdAt);
 
 @Component({
   selector: 'app-doctor-component',
   standalone: true,
-  imports: [CommonModule, MatDialogModule],
+  imports: [CommonModule, ReactiveFormsModule, MatDialogModule, InitialsPipe],
   templateUrl: './doctor-component.html',
   styleUrls: ['./doctor-component.css']
 })
 export class DoctorComponent {
-  doctorProfile: DoctorProfile = {
-    id: 1,
-    name: 'Dr. James Harrington',
-    specialty: 'Internal Medicine',
-    email: 'j.harrington@medicore.health',
-    memberSince: 'March 2021'
-  };
+  private readonly dialog = inject(MatDialog);
+  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
 
-  // List of patients to pass to the AddNoteComponent dialog
-  patientsList: Patient[] = [
-    { id: 101, first_name: 'Thomas', last_name: 'Brennan', email: 'tbrennan@example.com' },
-    { id: 102, first_name: 'Robert', last_name: 'Okafor', email: 'rokafor@example.com' },
-    { id: 103, first_name: 'Sarah', last_name: 'Jenkins', email: 'sjenkins@example.com' },
-    { id: 104, first_name: 'Michael', last_name: 'Chang', email: 'mchang@example.com' }
-  ];
+  readonly disclaimer = SUMMARY_DISCLAIMER;
+  readonly serviceTypes = SERVICE_TYPES;
+  readonly maxVisitDate = localToday();
 
-  services: ServiceRecord[] = [
-    {
-      id: '1',
-      patientName: 'Robert Okafor',
-      serviceType: 'followup',
-      patientNotes: 'Your home blood pressure readings are still higher than the target range. Increase lisinopril...',
-      dateOfVisit: 'Oct 8, 2024',
-      lastUpdated: 'Oct 8, 2024',
-      expanded: false,
-      labCategory: 'BLOOD PRESSURE FOLLOW-UP',
-      originalDoctorNote: 'Patient BP home log checked. Consistently above 140/90 mmHg. Lisinopril dosage adjusted.',
-      aiFriendlySummary: 'Your home blood pressure numbers remain elevated. The doctor has adjusted your lisinopril medication to help bring your pressure down.'
-    },
-    {
-      id: '2',
-      patientName: 'Thomas Brennan',
-      serviceType: 'lab',
-      patientNotes: 'Your kidney tests were normal. Your blood sugar and cholesterol are a little higher than...',
-      dateOfVisit: 'Sep 22, 2024',
-      lastUpdated: 'Sep 22, 2024',
-      expanded: false,
-      labCategory: 'LAB RESULTS — COMPREHENSIVE METABOLIC PANEL',
-      originalDoctorNote: 'Results reviewed with patient. Glucose 102 mg/dL (borderline elevated — pre-diabetic range). HbA1c 5.8%. LDL 138 mg/dL, HDL 42 mg/dL, Triglycerides 178 mg/dL. Kidney function within normal limits. Liver enzymes slightly elevated: ALT 48 U/L. Recommend lifestyle modifications, reduced alcohol intake, repeat labs in 6 months. Started metformin 500mg BID discussion deferred pending patient decision.',
-      aiFriendlySummary: 'Your kidney tests were normal. Your blood sugar and cholesterol are a little higher than recommended, and one liver test was mildly elevated. This does not mean you have diabetes, but it is important to focus on balanced meals, activity, and reducing alcohol. Repeat your labs in six months. You and your doctor can decide later whether metformin is right for you.'
-    },
-    {
-      id: '3',
-      patientName: 'Thomas Brennan',
-      serviceType: 'consultation',
-      patientNotes: 'Your annual exam was reassuring. Your heart, lungs, oxygen level, and abdominal exam were...',
-      dateOfVisit: 'Sep 15, 2024',
-      lastUpdated: 'Sep 15, 2024',
-      expanded: false,
-      labCategory: 'ANNUAL PHYSICAL CONSULTATION',
-      originalDoctorNote: 'Patient feels well overall. Routine annual wellness check up completed without acute concerns.',
-      aiFriendlySummary: 'Your annual checkup was clear with overall reassuring test results.'
+  // ---- Profile (US8) ------------------------------------------------------
+  readonly doctor: UserAccount = MOCK_USERS.find(u => u.id === CURRENT_DOCTOR_ID)!;
+  /** Name in the top bar. Falls back to the mock doctor if nobody is signed in (page refresh, demo). */
+  readonly displayName = this.auth.currentUser?.fullName ?? this.doctor.fullName;
+
+  /** US9: the doctor's patients = patients whose primary doctor is this doctor. */
+  readonly patients: UserAccount[] = MOCK_USERS.filter(
+    u => u.role === 'ROLE_PATIENT' && u.primaryDoctorId === CURRENT_DOCTOR_ID
+  );
+
+  // ---- State --------------------------------------------------------------
+  readonly notes = signal<ServiceNote[]>(MOCK_NOTES.map(n => ({ ...n })));
+  readonly view = signal<View>('dashboard');
+  readonly selectedPatientId = signal<number | null>(null);
+  readonly expandedIds = signal<ReadonlySet<number>>(new Set<number>());
+  readonly editingId = signal<number | null>(null);
+  readonly toast = signal<{ kind: 'success' | 'error'; text: string } | null>(null);
+
+  private returnView: View = 'dashboard';
+  private toastTimer?: ReturnType<typeof setTimeout>;
+
+  // ---- Derived data -------------------------------------------------------
+  /** US8: this doctor's latest services, newest first. */
+  readonly recentRows = computed<NoteView[]>(() =>
+    this.notes()
+      .filter(n => n.doctorId === CURRENT_DOCTOR_ID)
+      .sort(newestFirst)
+      .slice(0, 10)
+      .map(n => this.toView(n))
+  );
+
+  readonly selectedPatient = computed<UserAccount | null>(() =>
+    this.patients.find(p => p.id === this.selectedPatientId()) ?? null
+  );
+
+  readonly selectedPatientRows = computed<NoteView[]>(() =>
+    this.notes()
+      .filter(n => n.patientId === this.selectedPatientId())
+      .sort(newestFirst)
+      .map(n => this.toView(n))
+  );
+
+  readonly noteCounts = computed(() => {
+    const counts = new Map<number, number>();
+    for (const n of this.notes()) {
+      counts.set(n.patientId, (counts.get(n.patientId) ?? 0) + 1);
     }
-  ];
+    return counts;
+  });
 
-  constructor(private dialog: MatDialog) {}
+  primaryDoctorName(patient: UserAccount): string {
+    return patient.primaryDoctorId ? nameOf(patient.primaryDoctorId) : 'Not assigned';
+  }
 
-  openAddNoteDialog(): void {
-    const dialogRef = this.dialog.open(AddNoteComponent, {
-      width: '680px',
-      data: { patients: this.patientsList }
+  // ---- Forms --------------------------------------------------------------
+  /** US10.1: new note form with checks. */
+  readonly noteForm = new FormGroup({
+    patientId: new FormControl<number | null>(null, { validators: [Validators.required] }),
+    serviceType: new FormControl<ServiceType>('consultation', { nonNullable: true, validators: [Validators.required] }),
+    dateOfVisit: new FormControl(localToday(), { nonNullable: true, validators: [Validators.required, notInFuture] }),
+    title: new FormControl('', { nonNullable: true, validators: [notBlank, Validators.maxLength(120)] }),
+    originalNote: new FormControl('', { nonNullable: true, validators: [notBlank, Validators.minLength(10)] }),
+  });
+
+  /** US14: edit title, original note and (when it exists) the summary. */
+  readonly editForm = new FormGroup({
+    title: new FormControl('', { nonNullable: true, validators: [notBlank, Validators.maxLength(120)] }),
+    originalNote: new FormControl('', { nonNullable: true, validators: [notBlank] }),
+    summary: new FormControl('', { nonNullable: true }),
+  });
+
+  // ---- Sign out (US2) -----------------------------------------------------
+  signOut(): void {
+    this.auth.logout();
+    this.router.navigate(['/login']);
+  }
+
+  // ---- Navigation ---------------------------------------------------------
+  showDashboard(): void {
+    this.view.set('dashboard');
+  }
+
+  showPatients(): void {
+    this.view.set('patients');
+  }
+
+  /** US9: open one patient's details. */
+  openPatient(patient: UserAccount): void {
+    this.selectedPatientId.set(patient.id);
+    this.view.set('patient');
+  }
+
+  // ---- US10: add a note ---------------------------------------------------
+  startNote(patientId: number | null): void {
+    this.returnView = this.view();
+    this.noteForm.reset({
+      patientId,
+      serviceType: 'consultation',
+      dateOfVisit: localToday(),
+      title: '',
+      originalNote: '',
     });
+    this.view.set('new-note');
+  }
 
-    dialogRef.afterClosed().subscribe((result: AddNotePayload | undefined) => {
-      if (result) {
-        const selectedPatient = this.patientsList.find(p => p.id === Number(result.patient_id));
-        
-        const todayStr = new Date().toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric'
-        });
+  cancelNote(): void {
+    this.view.set(this.returnView);
+  }
 
-        const newRecord: ServiceRecord = {
-          id: Date.now().toString(),
-          patientName: selectedPatient ? `${selectedPatient.first_name} ${selectedPatient.last_name}` : 'Unknown Patient',
-          serviceType: result.service_type,
-          patientNotes: result.patient_notes,
-          dateOfVisit: todayStr,
-          lastUpdated: todayStr,
-          expanded: false,
-          labCategory: result.patient_notes.toUpperCase(),
-          originalDoctorNote: result.original_doctor_note,
-          aiFriendlySummary: result.original_doctor_note
-        };
+  /** US10.2: save the note, then ask for the summary (US11). */
+  saveNote(): void {
+    if (this.noteForm.invalid) {
+      this.noteForm.markAllAsTouched();
+      return;
+    }
+    const value = this.noteForm.getRawValue();
+    const now = localNow();
+    const nextId = this.notes().reduce((max, n) => Math.max(max, n.id), 0) + 1; // MOCK id
 
-        this.services.unshift(newRecord);
+    const note: ServiceNote = {
+      id: nextId,
+      patientId: value.patientId!,
+      doctorId: CURRENT_DOCTOR_ID,
+      serviceType: value.serviceType,
+      title: value.title.trim(),
+      originalNote: value.originalNote.trim(),
+      summary: '',
+      summaryStatus: 'PENDING',
+      dateOfVisit: value.dateOfVisit,
+      createdAt: now,
+      lastUpdated: now,
+    };
+
+    this.notes.update(list => [note, ...list]);
+    this.expandedIds.update(ids => new Set(ids).add(note.id));
+    this.showToast('success', 'Note saved. Your plain-language summary is being prepared.');
+
+    const stayOnPatient = this.returnView === 'patient' && this.selectedPatientId() === note.patientId;
+    this.view.set(stayOnPatient ? 'patient' : 'dashboard');
+
+    this.requestSummary(note.id);
+  }
+
+  // ---- US11: summary (MOCK AI) -------------------------------------------
+  /** MOCK: pretends to call Groq. Replace the timeout with the real request. */
+  requestSummary(noteId: number): void {
+    this.patchNote(noteId, { summaryStatus: 'PENDING', summary: '' });
+
+    setTimeout(() => {
+      const note = this.notes().find(n => n.id === noteId);
+      if (!note) return; // deleted while waiting
+
+      if (note.originalNote.includes(SIMULATE_AI_FAILURE)) {
+        // US11.3: note is kept, doctor gets a clear message
+        this.patchNote(noteId, { summaryStatus: 'FAILED', summary: '' });
+        this.showToast('error', 'The AI summary could not be created. Your note was saved. You can try again.');
+        return;
       }
+
+      this.patchNote(noteId, { summaryStatus: 'READY', summary: this.mockSummary(note) });
+      this.showToast('success', `Summary ready for "${note.title}".`);
+    }, 1500);
+  }
+
+  private mockSummary(note: ServiceNote): string {
+    const text = note.originalNote.replace(SIMULATE_AI_FAILURE, '').replace(/\s+/g, ' ').trim();
+    const firstSentence = text.split(/(?<=[.!?])\s/)[0];
+    return `This is a plain-language version of your "${note.title}" visit. ${firstSentence} If anything is unclear, please ask your clinician.`;
+  }
+
+  // ---- US13: read original next to summary --------------------------------
+  isExpanded(id: number): boolean {
+    return this.expandedIds().has(id);
+  }
+
+  toggleExpand(id: number): void {
+    this.expandedIds.update(ids => {
+      const next = new Set(ids);
+      if (!next.delete(id)) next.add(id);
+      return next;
     });
   }
 
-  toggleExpand(service: ServiceRecord): void {
-    service.expanded = !service.expanded;
+  // ---- US14: edit ---------------------------------------------------------
+  isOwn(note: ServiceNote): boolean {
+    return note.doctorId === CURRENT_DOCTOR_ID;
   }
 
-  deleteRecord(service: ServiceRecord): void {
-    this.services = this.services.filter(s => s.id !== service.id);
+  startEdit(note: ServiceNote): void {
+    if (!this.isOwn(note)) return;
+    const summary = this.editForm.controls.summary;
+    summary.setValidators(note.summaryStatus === 'READY' ? [notBlank] : []);
+    this.editForm.reset({ title: note.title, originalNote: note.originalNote, summary: note.summary });
+    this.editingId.set(note.id);
+    this.expandedIds.update(ids => new Set(ids).add(note.id));
+  }
+
+  cancelEdit(): void {
+    this.editingId.set(null);
+  }
+
+  saveEdit(note: ServiceNote): void {
+    if (this.editForm.invalid) {
+      this.editForm.markAllAsTouched();
+      return;
+    }
+    const value = this.editForm.getRawValue();
+    this.patchNote(note.id, {
+      title: value.title.trim(),
+      originalNote: value.originalNote.trim(),
+      summary: note.summaryStatus === 'READY' ? value.summary.trim() : note.summary,
+      lastUpdated: localNow(), // "last updated" changes
+    });
+    this.editingId.set(null);
+    this.showToast('success', 'Your changes were saved.');
+  }
+
+  // ---- US15: delete after confirmation ------------------------------------
+  deleteNote(note: NoteView): void {
+    if (!this.isOwn(note)) return;
+    this.dialog
+      .open(ConfirmDialogComponent, {
+        width: '440px',
+        data: {
+          title: 'Delete this note?',
+          message: `"${note.title}" for ${note.patientName} and its summary will be removed. This cannot be undone.`,
+          confirmLabel: 'Delete note',
+          danger: true,
+        },
+      })
+      .afterClosed()
+      .subscribe(confirmed => {
+        if (!confirmed) return; // cancel: nothing changes
+        this.notes.update(list => list.filter(n => n.id !== note.id));
+        this.expandedIds.update(ids => {
+          const next = new Set(ids);
+          next.delete(note.id);
+          return next;
+        });
+        if (this.editingId() === note.id) this.editingId.set(null);
+        this.showToast('success', 'The note was deleted.');
+      });
+  }
+
+  // ---- Helpers ------------------------------------------------------------
+  dismissToast(): void {
+    clearTimeout(this.toastTimer);
+    this.toast.set(null);
+  }
+
+  private showToast(kind: 'success' | 'error', text: string): void {
+    clearTimeout(this.toastTimer);
+    this.toast.set({ kind, text });
+    this.toastTimer = setTimeout(() => this.toast.set(null), 5000);
+  }
+
+  private patchNote(id: number, changes: Partial<ServiceNote>): void {
+    this.notes.update(list => list.map(n => (n.id === id ? { ...n, ...changes } : n)));
+  }
+
+  private toView(n: ServiceNote): NoteView {
+    return { ...n, patientName: nameOf(n.patientId), doctorName: nameOf(n.doctorId) };
   }
 }

@@ -19,18 +19,12 @@
 /* Sidebar Styling */
 .sidebar {
   width: 240px;
-  background-color: #050b14;
-  color: #ffffff;
-  padding: 24px 16px;
+  background-color: #080c14;
+  color: #cbd5e1;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  padding: 20px 16px;
   flex-shrink: 0;
-}
-
-.sidebar-top {
-  display: flex;
-  flex-direction: column;
 }
 
 .logo-container {
@@ -38,14 +32,15 @@
   align-items: center;
   gap: 10px;
   margin-bottom: 36px;
+  padding: 0 6px;
 }
 
 .logo-icon {
-  background-color: #059669;
+  background-color: #0d9488;
   color: white;
-  width: 24px;
-  height: 24px;
-  border-radius: 4px;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -54,24 +49,18 @@
 }
 
 .logo-text {
-  font-weight: 700;
-  font-size: 16px;
-  letter-spacing: -0.02em;
+  color: white;
+  font-weight: 600;
+  font-size: 15px;
 }
 
 .nav-header {
   font-size: 11px;
-  letter-spacing: 0.08em;
-  color: #475569;
   font-weight: 600;
+  color: #475569;
+  letter-spacing: 0.08em;
+  padding: 0 10px;
   margin-bottom: 12px;
-  padding-left: 8px;
-}
-
-.nav-section {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
 }
 
 .nav-item {
@@ -79,13 +68,23 @@
   align-items: center;
   gap: 12px;
   padding: 10px 12px;
-  color: #94a3b8;
-  text-decoration: none;
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
+  text-decoration: none;
+  color: #94a3b8;
+  margin-bottom: 4px;
   position: relative;
   transition: all 0.2s ease;
+}
+
+.nav-item:hover {
+  color: #f8fafc;
+}
+
+.nav-item.active {
+  background-color: #1e293b;
+  color: white;
 }
 
 .nav-icon {
@@ -93,68 +92,116 @@
   height: 18px;
 }
 
-.nav-item:hover {
-  background-color: #0f172a;
-  color: #ffffff;
-}
-
-.nav-item.active {
-  background-color: #1e293b;
-  color: #ffffff;
-}
-
 .active-dot {
+  margin-left: auto;
   width: 6px;
   height: 6px;
-  background-color: #10b981;
   border-radius: 50%;
-  margin-left: auto;
+  background-color: #10b981;
 }
 
-/* User Card inside Sidebar bottom */
-.user-card {
+/* Main Area Layout */
+.main-wrapper {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: #f8fafc;
+}
+
+.top-header {
+  height: 64px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background-color: #0f172a;
-  border-radius: 10px;
+  justify-content: flex-end;
+  padding: 0 40px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #f1f5f9;
 }
 
-.avatar {
-  width: 36px;
-  height: 36px;
+.header-user {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.user-text {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+}
+
+.user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.user-role {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background-color: #0f766e;
+  background-color: #8b5cf6;
   color: white;
+  font-size: 11px;
+  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
-  font-size: 13px;
 }
 
-.user-info .user-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: #ffffff;
-}
-
-.user-info .user-role {
-  font-size: 11px;
+.sign-out-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
   color: #64748b;
+  font-size: 13px;
+  cursor: pointer;
+  margin-left: 12px;
+  padding: 4px 8px;
+  border-radius: 6px;
 }
 
-/* Main Content Area */
-.main-content {
-  flex: 1;
-  padding: 32px;
-  overflow-y: auto;
+.sign-out-btn:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
 }
 
-.content-wrapper {
+.signout-icon {
+  width: 15px;
+  height: 15px;
+}
+
+/* Page Body */
+.content-body {
+  padding: 32px 40px;
   max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Page header (same look as the admin pages) */
+.page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.page-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
 }
 
 /* Doctor Banner Card */
@@ -399,4 +446,252 @@
   font-size: 11px;
   color: #059669;
   opacity: 0.8;
+}
+/* =========================================================
+   Additions for US8-US15 (views, forms, status, toast)
+   ========================================================= */
+
+/* Sidebar nav items are buttons now */
+button.nav-item {
+  width: 100%;
+  background: transparent;
+  border: none;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 13px;
+  color: #64748b;
+  cursor: pointer;
+  margin-bottom: 16px;
+  padding: 0;
+}
+
+.back-link:hover {
+  color: #0f172a;
+}
+
+.add-note-btn:hover {
+  background-color: #059669;
+}
+
+/* Extra service type badges */
+.type-badge.diagnosis {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+}
+
+.type-badge.prescription {
+  background-color: #ede9fe;
+  color: #6d28d9;
+}
+
+/* Summary status chip */
+.status-chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-chip.ready {
+  background-color: #d1fae5;
+  color: #047857;
+}
+
+.status-chip.pending {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.status-chip.failed {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.col-actions {
+  text-align: right;
+}
+
+td .action-buttons {
+  justify-content: flex-end;
+}
+
+.empty-cell {
+  text-align: center;
+  color: #94a3b8;
+  padding: 32px;
+}
+
+.pre-wrap {
+  white-space: pre-wrap;
+}
+
+.muted-text {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.ai-summary.ai-failed {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+
+.retry-btn {
+  margin-top: 12px;
+}
+
+/* Toast */
+.toast {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.toast.error {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  line-height: 1;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* Forms */
+.form-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 18px;
+}
+
+.form-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  margin-bottom: 6px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  color: #0f172a;
+  background: #ffffff;
+}
+
+textarea.form-control {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+.form-control.invalid {
+  border-color: #ef4444;
+}
+
+.field-error {
+  color: #dc2626;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.form-hint {
+  color: #64748b;
+  font-size: 12px;
+  margin-bottom: 16px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn-primary,
+.btn-secondary {
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-primary {
+  background-color: #059669;
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background-color: #047857;
+}
+
+.btn-secondary {
+  background-color: #f1f5f9;
+  color: #334155;
+}
+
+.btn-secondary:hover {
+  background-color: #e2e8f0;
+}
+
+.edit-form .detail-grid {
+  margin-bottom: 4px;
+}
+
+@media (max-width: 900px) {
+  .form-row,
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
 }
