@@ -54,9 +54,9 @@
 
       <form (ngSubmit)="onLogin()" #loginForm="ngForm">
         <div class="input-group">
-          <label for="username">Username / Email</label>
+          <label for="username">Email</label>
           <input 
-            type="text" 
+            type="email" 
             id="username" 
             [(ngModel)]="credentials.username" 
             name="username" 
