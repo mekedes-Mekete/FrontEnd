@@ -14,8 +14,9 @@
           <line x1="23" y1="11" x2="17" y2="11"></line>
         </svg>
       </div>
-      <a class="arrow-btn" routerLink="/admin/doctors" aria-label="See all doctors">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <a class="arrow-btn" routerLink="/admin/doctors">
+        <span>All doctors</span>
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="5" y1="12" x2="19" y2="12"></line>
           <polyline points="12 5 19 12 12 19"></polyline>
         </svg>
@@ -40,6 +41,9 @@
         <p class="muted">{{ loading() ? 'Loading…' : 'No doctors yet.' }}</p>
       }
     </div>
+    @if (doctors().length > previewSize) {
+      <p class="preview-count">Showing {{ previewSize }} of {{ doctors().length }} doctors</p>
+    }
   </section>
 
   <!-- Patients preview (UC4) -->
@@ -51,8 +55,9 @@
           <circle cx="12" cy="7" r="4"></circle>
         </svg>
       </div>
-      <a class="arrow-btn" routerLink="/admin/patients" aria-label="See all patients">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <a class="arrow-btn" routerLink="/admin/patients">
+        <span>All patients</span>
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="5" y1="12" x2="19" y2="12"></line>
           <polyline points="12 5 19 12 12 19"></polyline>
         </svg>
@@ -77,5 +82,8 @@
         <p class="muted">{{ loading() ? 'Loading…' : 'No patients yet.' }}</p>
       }
     </div>
+    @if (patients().length > previewSize) {
+      <p class="preview-count">Showing {{ previewSize }} of {{ patients().length }} patients</p>
+    }
   </section>
 </div>

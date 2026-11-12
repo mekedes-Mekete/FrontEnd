@@ -90,27 +90,30 @@ export class AccountsComponent {
       });
   }
 
-  /** US7.3: deactivate needs confirmation; reactivating does not. */
+  /** US7.3: deactivating and reactivating both ask for confirmation first. */
   setActive(account: AccountRow, active: boolean): void {
     this.errorMessage.set('');
-    if (active) {
-      this.saveActive(account, true);
-      return;
-    }
-    this.dialog
-      .open<ConfirmDialogComponent, ConfirmDialogData, boolean>(ConfirmDialogComponent, {
-        width: '460px',
-        maxWidth: '95vw',
-        data: {
+    const data: ConfirmDialogData = active
+      ? {
+          title: 'Reactivate this account?',
+          message: `${account.fullName} will be able to log in again with their existing password.`,
+          confirmLabel: 'Reactivate',
+        }
+      : {
           title: 'Deactivate this account?',
           message: `${account.fullName} will no longer be able to log in. Their records are kept, and you can reactivate the account later.`,
           confirmLabel: 'Deactivate',
           danger: true,
-        },
+        };
+    this.dialog
+      .open<ConfirmDialogComponent, ConfirmDialogData, boolean>(ConfirmDialogComponent, {
+        width: '460px',
+        maxWidth: '95vw',
+        data,
       })
       .afterClosed()
       .subscribe((confirmed) => {
-        if (confirmed) this.saveActive(account, false);
+        if (confirmed) this.saveActive(account, active);
       });
   }
 

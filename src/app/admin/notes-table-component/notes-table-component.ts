@@ -30,6 +30,8 @@ export class NotesTableComponent {
   readonly notes = input.required<NoteRow[]>();
   readonly showPatient = input(true);
   readonly showDoctor = input(true);
+  /** Rows shown before "Show all". Leave unset to show every row. */
+  readonly limit = input<number | null>(null);
   readonly changed = output<void>();
 
   private readonly dialog = inject(MatDialog);
@@ -37,6 +39,15 @@ export class NotesTableComponent {
   private readonly adminData = inject(AdminDataService);
 
   readonly expandedId = signal<number | null>(null);
+  readonly showAll = signal(false);
+  readonly visibleNotes = computed(() => {
+    const max = this.limit();
+    return max == null || this.showAll() ? this.notes() : this.notes().slice(0, max);
+  });
+  readonly hasMore = computed(() => {
+    const max = this.limit();
+    return max != null && this.notes().length > max;
+  });
   readonly errorMessage = signal('');
   readonly columnCount = computed(() => 5 + (this.showPatient() ? 1 : 0) + (this.showDoctor() ? 1 : 0));
 
