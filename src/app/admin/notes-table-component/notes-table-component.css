@@ -48,3 +48,10 @@ tr.is-expanded td {
   font-size: 11px;
   color: #059669;
 }
+
+.show-more-row {
+  display: flex;
+  justify-content: center;
+  padding: 12px;
+  border-top: 1px solid #e2e8f0;
+}
