@@ -12,7 +12,10 @@ import {
   ServiceNote,
   UserAccount,
 } from '../models/clinic.models';
-import { MockAdminBackend } from './mock-admin-backend';
+import { HttpClient } from '@angular/common/http';
+import { API_BASE_URL } from './api.config';
+
+const API = `${API_BASE_URL}/api/admin`;
 
 const RECENT_NOTES_LIMIT = 10;
 
@@ -27,43 +30,39 @@ const RECENT_NOTES_LIMIT = 10;
  *
  * Opening a profile or detail page makes no extra call. After a write, only the
  * saved item is swapped in memory. A browser refresh loads again.
- *
- * INTEGRATION: only the 5 methods in the "API calls" section talk to the server.
- * Replace each body with the HttpClient call in its comment, then delete
- * mock-admin-backend.ts and mock-clinic-data.ts. No component changes.
  */
 @Injectable({ providedIn: 'root' })
 export class AdminDataService {
-  private readonly backend = inject(MockAdminBackend); // INTEGRATION: replace with inject(HttpClient)
+  private readonly http = inject(HttpClient);
 
   private data: AdminData | null = null;
   private loading$: Observable<AdminData> | null = null;
 
   // ================= API calls (the only server access) =================
 
-  /** 1. GET /api/admin/data  ->  this.http.get<AdminData>(`${apiUrl}/admin/data`) */
+  /** 1. GET /api/admin/data */
   private apiGetData(): Observable<AdminData> {
-    return this.backend.getData().pipe(catchError(toError));
+    return this.http.get<AdminData>(`${API}/data`).pipe(catchError(toError));
   }
 
-  /** 2. PUT /api/admin/notes/{id}  ->  this.http.put<ServiceNote>(`${apiUrl}/admin/notes/${id}`, changes) */
+  /** 2. PUT /api/admin/notes/{id} */
   private apiPutNote(id: number, changes: NoteChanges): Observable<ServiceNote> {
-    return this.backend.putNote(id, changes).pipe(catchError(toError));
+    return this.http.put<ServiceNote>(`${API}/notes/${id}`, changes).pipe(catchError(toError));
   }
 
-  /** 3. DELETE /api/admin/notes/{id}  ->  this.http.delete<void>(`${apiUrl}/admin/notes/${id}`) */
+  /** 3. DELETE /api/admin/notes/{id} */
   private apiDeleteNote(id: number): Observable<void> {
-    return this.backend.deleteNote(id).pipe(catchError(toError));
+    return this.http.delete<void>(`${API}/notes/${id}`).pipe(catchError(toError));
   }
 
-  /** 4. POST /api/admin/accounts  ->  this.http.post<UserAccount>(`${apiUrl}/admin/accounts`, input) */
+  /** 4. POST /api/admin/accounts */
   private apiPostAccount(input: AccountInput): Observable<UserAccount> {
-    return this.backend.postAccount(input).pipe(catchError(toError));
+    return this.http.post<UserAccount>(`${API}/accounts`, input).pipe(catchError(toError));
   }
 
-  /** 5. PUT /api/admin/accounts/{id}  ->  this.http.put<UserAccount>(`${apiUrl}/admin/accounts/${id}`, input) */
+  /** 5. PUT /api/admin/accounts/{id} */
   private apiPutAccount(id: number, input: AccountInput): Observable<UserAccount> {
-    return this.backend.putAccount(id, input).pipe(catchError(toError));
+    return this.http.put<UserAccount>(`${API}/accounts/${id}`, input).pipe(catchError(toError));
   }
 
   // ================= Screens: built from the one load call =================
@@ -244,7 +243,7 @@ function clone<T>(value: T): T {
   return structuredClone(value);
 }
 
-/** Turns a server error (HttpErrorResponse or the mock's equivalent) into an Error with the contract's message. */
+/** Turns a server error (HttpErrorResponse) into an Error with the contract's message. */
 function toError(err: unknown): Observable<never> {
   const e = err as { error?: { message?: string }; message?: string };
   const message = e?.error?.message ?? 'Something went wrong. Please try again.';

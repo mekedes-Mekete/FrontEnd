@@ -21,7 +21,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (note of notes(); track note.id) {
+        @for (note of visibleNotes(); track note.id) {
           <tr [class.is-expanded]="expandedId() === note.id">
             @if (showPatient()) {
               <td>
@@ -88,4 +88,11 @@
       </tbody>
     </table>
   </div>
+  @if (hasMore()) {
+    <div class="show-more-row">
+      <button type="button" class="btn-link" (click)="showAll.set(!showAll())">
+        {{ showAll() ? 'Show fewer' : 'Show all ' + notes().length + ' services' }}
+      </button>
+    </div>
+  }
 </div>

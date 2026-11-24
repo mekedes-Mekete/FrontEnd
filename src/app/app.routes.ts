@@ -9,6 +9,7 @@ import { DoctorProfileComponent } from './admin/doctor-profile-component/doctor-
 import { PatientListComponent } from './admin/patient-list-component/patient-list-component';
 import { PatientDetailComponent } from './admin/patient-detail-component/patient-detail-component';
 import { AccountsComponent } from './admin/accounts-component/accounts-component';
+import { roleGuard } from './services/role.guard';
 
 export const routes: Routes = [
   // Default path goes to login page
@@ -31,8 +32,9 @@ export const routes: Routes = [
     ],
   },
 
-  { path: 'doctor', component: DoctorComponent },
-  { path: 'patient', component: PatientComponent },
+  // US1.2: doctor and patient screens open only for their own role.
+  { path: 'doctor', component: DoctorComponent, canActivate: [roleGuard('ROLE_DOCTOR')], title: 'Doctor · MediScribe AI' },
+  { path: 'patient', component: PatientComponent, canActivate: [roleGuard('ROLE_PATIENT')], title: 'Patient · MediScribe AI' },
 
   // Redirect unknown URLs back to login
   { path: '**', redirectTo: 'login' },

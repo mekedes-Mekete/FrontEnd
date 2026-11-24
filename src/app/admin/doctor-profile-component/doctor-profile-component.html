@@ -51,6 +51,6 @@
   }
 
   <h2 class="section-title">Recent services</h2>
-  <app-notes-table [notes]="p.recentNotes" [showDoctor]="false" (changed)="load()" />
+  <app-notes-table [notes]="p.recentNotes" [showDoctor]="false" [limit]="5" (changed)="load()" />
 }
 }

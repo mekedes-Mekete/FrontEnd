@@ -1,63 +1,98 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { AccountRow, NoteRow } from '../models/clinic.models';
+import { AuthService } from '../services/auth';
+import { ApiError } from '../services/api-error';
+import { PatientDataService } from '../services/patient-data.service';
+import { InitialsPipe } from '../shared/initials.pipe';
 
-export interface PatientInfo {
-  name: string;
-  dob: string;
-  primaryDoctor: string;
-  allergies: string;
-}
+/** NFR3: shown next to every summary. */
+const SUMMARY_DISCLAIMER = "For clarity only. Follow your clinician's instructions.";
 
-export interface ServiceRow {
-  serviceType: string;
-  patientNotes: string;
-  dateOfVisit: string;
-  lastUpdated: string;
-  title: string;
-  originalNote: string;
-  insightsSummary: string;
-  expanded?: boolean;
-}
-
+/**
+ * Patient screen (US16, US17), connected to GET /api/patient/dashboard. The server decides who the
+ * patient is from the JWT and returns only that patient's own profile and services (NFR1).
+ */
 @Component({
   selector: 'app-patient-component',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, InitialsPipe],
   templateUrl: './patient-component.html',
   styleUrl: './patient-component.css',
 })
-export class PatientComponent {
-  patient: PatientInfo = {
-    name: 'Thomas Brennan',
-    dob: '1978-04-12',
-    primaryDoctor: 'Dr. James Harrington',
-    allergies: 'Penicillin, Sulfa'
-  };
+export class PatientComponent implements OnInit {
+  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly api = inject(PatientDataService);
 
-  serviceRows: ServiceRow[] = [
-    {
-      serviceType: 'consultation',
-      patientNotes: 'Your annual exam was reassuring. Your heart, lungs, oxygen level, and abdominal exam were normal. Your blood pressure i...',
-      dateOfVisit: 'Sep 15, 2024',
-      lastUpdated: 'Sep 15, 2024',
-      title: 'ANNUAL PHYSICAL EXAMINATION',
-      originalNote: 'Patient presents for routine annual physical. BP 128/82 mmHg, HR 72 bpm, SpO2 98%. Weight 83kg, BMI 26.4. Lungs clear to auscultation. Heart rhythm regular, no murmurs detected. Abdomen soft and non-tender. Patient reports mild fatigue over past 6 weeks, attributed to work stress. Recommended blood panel and follow-up in 3 months. Discussed diet and exercise modifications.',
-      insightsSummary: 'Your annual exam was reassuring. Your heart, lungs, oxygen level, and abdominal exam were normal. Your blood pressure is slightly above the ideal range, and you mentioned some recent tiredness that may be related to stress. Your next steps are to complete the recommended blood tests, keep up healthy food and exercise habits, and return in three months.',
-      expanded: true
-    },
-    {
-      serviceType: 'lab',
-      patientNotes: 'Your kidney tests were normal. Your blood sugar and cholesterol are a little higher than recommended, and one live...',
-      dateOfVisit: 'Sep 22, 2024',
-      lastUpdated: 'Sep 22, 2024',
-      title: 'BLOOD PANEL LAB RESULTS',
-      originalNote: 'Fasting Glucose 105 mg/dL, HbA1c 5.8%, Total Cholesterol 215 mg/dL. Renal panel within normal limits. ALT slightly elevated at 45 U/L.',
-      insightsSummary: 'Your kidney tests were normal. Your blood sugar and cholesterol are a little higher than recommended, and one liver enzyme is slightly elevated.',
-      expanded: false
-    }
-  ];
+  readonly disclaimer = SUMMARY_DISCLAIMER;
 
-  toggleDetails(row: ServiceRow): void {
-    row.expanded = !row.expanded;
+  // ---- US16: profile and services from the server -------------------------
+  readonly patient = signal<AccountRow | null>(null);
+  private readonly allNotes = signal<NoteRow[]>([]);
+
+  readonly loading = signal(true);
+  readonly loadError = signal<string | null>(null);
+
+  /** Name in the top bar: the profile once loaded, the login answer before that. */
+  readonly displayName = computed(() => this.patient()?.fullName ?? this.auth.currentUser?.fullName ?? '');
+  readonly primaryDoctorName = computed(() => this.patient()?.primaryDoctorName ?? 'Not assigned');
+
+  /** Services, newest first. */
+  readonly serviceRows = computed<NoteRow[]>(() =>
+    [...this.allNotes()].sort(
+      (a, b) => b.dateOfVisit.localeCompare(a.dateOfVisit) || b.createdAt.localeCompare(a.createdAt)
+    )
+  );
+
+  // ---- US17: open a service ----------------------------------------------
+  readonly expandedIds = signal<ReadonlySet<number>>(new Set<number>());
+
+  ngOnInit(): void {
+    this.reload();
+  }
+
+  /** GET /api/patient/dashboard */
+  reload(): void {
+    this.loading.set(true);
+    this.loadError.set(null);
+    this.api.load().subscribe({
+      next: data => {
+        this.patient.set(data.profile);
+        this.allNotes.set(data.notes);
+        // The first (newest) service starts open, like the design.
+        const first = this.serviceRows()[0];
+        this.expandedIds.set(new Set<number>(first ? [first.id] : []));
+        this.loading.set(false);
+      },
+      error: (err: ApiError) => {
+        if (err.status === 401) { // token expired or revoked
+          this.auth.logout();
+          this.router.navigate(['/login']);
+          return;
+        }
+        this.loadError.set(err.message);
+        this.loading.set(false);
+      },
+    });
+  }
+
+  // ---- Sign out (US2) -----------------------------------------------------
+  signOut(): void {
+    this.auth.logout();
+    this.router.navigate(['/login']);
+  }
+
+  isExpanded(id: number): boolean {
+    return this.expandedIds().has(id);
+  }
+
+  toggleDetails(row: NoteRow): void {
+    this.expandedIds.update(ids => {
+      const next = new Set(ids);
+      if (!next.delete(row.id)) next.add(row.id);
+      return next;
+    });
   }
 }

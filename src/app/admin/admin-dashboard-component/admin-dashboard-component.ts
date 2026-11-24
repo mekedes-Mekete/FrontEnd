@@ -5,7 +5,7 @@ import { AdminDataService } from '../../services/admin-data.service';
 import { InitialsPipe } from '../../shared/initials.pipe';
 import { MaskEmailPipe } from '../../shared/mask-email.pipe';
 
-/** Admin home: preview cards for doctors (UC3) and patients (UC4). This is the old AdminComponent body. */
+/** Admin home: preview cards for doctors (UC3) and patients (UC4). */
 @Component({
   selector: 'app-admin-dashboard-component',
   standalone: true,
